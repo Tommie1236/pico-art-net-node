@@ -4,9 +4,9 @@ set -e    # Exit on error
 
 git submodule update --init
 cd Code/lib/Pico-DMX
-git submodule update 
+git submodule update --init
 cd ../pico-sdk/
-git submodule update 
+git submodule update --init 
 export PICO_SDK_PATH=$PWD
 cd ../..
 mkdir -p build
