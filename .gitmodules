@@ -4,3 +4,6 @@
 [submodule "Code/lib/Pico-DMX"]
 	path = Code/lib/Pico-DMX
 	url = https://github.com/jostlowe/Pico-DMX
+[submodule "Code/lib/pico-ssd1306"]
+	path = Code/lib/pico-ssd1306
+	url = https://github.com/Harbys/pico-ssd1306
