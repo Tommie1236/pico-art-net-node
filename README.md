@@ -4,5 +4,5 @@
 
 got the idea from the project linked below. took some ideas/parts off it and created my own one 
 
-https://www.techandtransit.com/lighting/pi-pico-artnet-to-dmx-node/#%f0%9f%a7%91%f0%9f%92%bb-programming-your-pico-artnet-dmx-node  
+https://www.techandtransit.com/lighting/pi-pico-artnet-to-dmx-node  
 https://github.com/tmingos/Pico-ArtNet-DMX-Node
