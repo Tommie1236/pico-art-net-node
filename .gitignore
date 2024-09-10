@@ -3,7 +3,11 @@ build/**
 Code/build/*
 
 
-
+**/include/**
+**/lib/**
+**/bin/**
+**/lib64
+**/pyvenv.cfg
 
 
 
@@ -43,3 +47,4 @@ Code/build/*
 *.exe
 *.out
 *.app
+.aider*
