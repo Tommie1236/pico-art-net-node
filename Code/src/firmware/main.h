@@ -1,5 +1,9 @@
 
+// Config file for Pico Art-Net DMX Node
+// ©Timo Oosterom 2024
+
 // Config made for a RP2040 Zero. (Pi pico in smaller form factor)
+// For full pin functions see: https://datasheets.raspberrypi.com/rp2040/rp2040-datasheet.pdf (Section 1.4.3)
 //      
 //               ┏━━━━━┓              
 //           ┏━━━┫     ┣━━━┓          
@@ -18,6 +22,8 @@
 //              ┃ ┃ ┗ GP11
 //              ┃ ┗ GP 12
 //              ┗ GP13
+//
+//  GP17-25 Are available via small pads on the bottom side of the board.
 
 #ifndef MAIN_H
 #define MAIN_H
