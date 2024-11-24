@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import time
 import pygame
 from pygame.locals import *
 
@@ -76,16 +75,6 @@ while running:
     draw_buttons()
     
     # Update the display
-    pygame.display.update()
-
-    time.sleep(2)
-    print('hi')
-    for i, pixel in enumerate(pixels):
-        if i % 2 == 0:
-            pixel.set(1)
-        else:
-            pixel.set(0)
-    
     pygame.display.update()
 
 # Quit Pygame
