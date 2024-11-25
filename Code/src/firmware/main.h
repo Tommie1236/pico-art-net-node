@@ -28,8 +28,13 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+// TODO: add default values for settings that can be changed from the menu
+
 // General
 #define UNIVERSE_LENGTH 512
+
+#define PORT_A          0
+#define PORT_B          1
 
 // DMX Ports
 #define PORT_A_ENABLE   1
@@ -45,22 +50,17 @@
 #define PORT_B_LED_PIN  6
 
 // Display
-#define DISPLAY_WIDTH 128
-#define DISPLAY_HEIGHT 64 // or 32. don't know what i will go with yet
+#define DISPLAY_WIDTH   128
+#define DISPLAY_HEIGHT  32 // 64 or 32. don't know what i will go with yet
 
-#define DIPLAY_SDA_PIN  8
-#define DIPLAY_SCL_PIN  9
+#define DISPLAY_SDA_PIN  8
+#define DISPLAY_SCL_PIN  9
 
-// Buttons/Controls. Don't know yet if I want to use 4 buttons or a push encoder (+ 1 button?)
+// Buttons/Controls. 
 #define MENU_BUTTON_PIN 10  // Menu/Enter
 #define UP_BUTTON_PIN   11  // Up
 #define DOWN_BUTTON_PIN 12  // Down
 #define EXIT_BUTTON_PIN 13  // Exit/Back
-
-// #define ENCODER_A_PIN   10
-// #define ENCODER_B_PIN   11
-// #define ENCODER_SW_PIN  12
-// #define BUTTON_PIN      13
 
 // Ethernet (enc28j60)
 
