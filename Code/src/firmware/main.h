@@ -20,7 +20,7 @@
 //              ┃ ┃ ┃ ┃ ┗ GP9
 //              ┃ ┃ ┃ ┗ GP10
 //              ┃ ┃ ┗ GP11
-//              ┃ ┗ GP 12
+//              ┃ ┗ GP12
 //              ┗ GP13
 //
 //  GP17-25 Are available via small pads on the bottom side of the board.
