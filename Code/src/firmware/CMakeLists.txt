@@ -17,7 +17,6 @@ target_link_libraries(firmware PRIVATE
     hardware_pio
     hardware_dma
     hardware_adc
-    pico_cyw43_arch_none
 
     picodmx
 )
