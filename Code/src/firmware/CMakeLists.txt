@@ -12,13 +12,16 @@ add_executable(firmware
 # link in libraries (almost every hardware/<blah>.h or pico/<blah>.h is hardware_blah or pico_blah)
 target_link_libraries(firmware PRIVATE
     pico_stdlib
+    pico_multicore
     hardware_spi
     hardware_gpio
     hardware_pio
     hardware_dma
     hardware_adc
+    hardware_i2c
 
     picodmx
+    pico_ssd1306
 )
 
 # enable usb/uart stdout

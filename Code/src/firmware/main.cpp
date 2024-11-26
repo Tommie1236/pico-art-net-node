@@ -1,20 +1,20 @@
 #include <stdio.h>
 #include "hardware/gpio.h"
+#include "hardware/i2c.h"
 #include "pico/stdlib.h"
 #include "pico/time.h"
+#include "pico/multicore.h"
 
 #include "main.h"
 
 #include <DmxOutput.h>
 //#include <DmxInput.h>
 // Dmx input maybe be supported in the future. for now only output.
-//#include <pico-ssd1306/ssd1306.h>
-//#include <pico-ssd1306/textRenderer/TextRenderer.h>
-
-//#include <hardware/i2c.h>
+#include <ssd1306.h>
+#include <textRenderer/TextRenderer.h>
 
 
-//using namespace pico_ssd1306;
+using namespace pico_ssd1306;
 
 DmxOutput dmx_out[2];
 //DmxInput  dmx_in[2];
@@ -56,28 +56,37 @@ void init_gpio() {
     gpio_set_drive_strength(PORT_B_LED_PIN, GPIO_DRIVE_STRENGTH_12MA);
 }
 
+void init_oled() {
+    i2c_init(i2c0, 100 * 1000);
+
+    gpio_set_function(DISPLAY_SDA_PIN, GPIO_FUNC_I2C);
+    gpio_set_function(DISPLAY_SCL_PIN, GPIO_FUNC_I2C);
+
+    gpio_pull_up(DISPLAY_SDA_PIN);
+    gpio_pull_up(DISPLAY_SCL_PIN);
+}
+
+void main_core_1 () {
+    // handle artnet connection and send the dmx data to the pio's
+    // input isn't supported yet. only output.
+}
 
 int main () {
+    // Handle user interaction: display/buttons. and the settings.
+
     stdio_init_all();
     init_gpio();
-    dmx_out[PORT_A].begin(PORT_A_TX_PIN);
-    //dmx_out[PORT_B].begin(PORT_B_TX_PIN);
+    init_oled();
 
-    gpio_put(PORT_A_DIR_PIN, 1);
-    gpio_put(PORT_A_LED_PIN, 1);
 
-    //i2c_init(i2c0, 100 * 1000);
-    //gpio_set_function(DISPLAY_SDA_PIN, GPIO_FUNC_I2C);
-    //gpio_set_function(DISPLAY_SCL_PIN, GPIO_FUNC_I2C);
-    //gpio_pull_up(DISPLAY_SDA_PIN);
-    //gpio_pull_up(DISPLAY_SCL_PIN);
-
-    //sleep_ms(100); // wait for display to boot up
-
-    //SSD1306 display = SSD1306(i2c0, 0x3D, Size::W128xH32);
-    //display.setOrientation(0);
-    //drawText(&display, font_16x32, "Hello World!", 0, 0);
+    SSD1306 display = SSD1306(i2c0, 0x3c, Size::W128xH64);
+    display.setOrientation(0);
     
-    //display.sendBuffer();
-    while (1) {}
+    drawText(&display, font_12x16, "line 1 icons", 0, 0);
+    drawText(&display, font_12x16, "line 2 menu", 0, 16);
+    drawText(&display, font_12x16, "line 3 menu", 0, 32);
+    drawText(&display, font_12x16, "line 4 menu", 0, 48);
+    
+    display.sendBuffer(); 
+   
 };
