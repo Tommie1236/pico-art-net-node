@@ -12,9 +12,13 @@
 // Dmx input maybe be supported in the future. for now only output.
 #include <ssd1306.h>
 #include <textRenderer/TextRenderer.h>
+#include <shapeRenderer/ShapeRenderer.h>
 
 
 using namespace pico_ssd1306;
+
+#define FONT font_12x16
+
 
 //DmxOutput dmx_out[2];
 //DmxInput  dmx_in[2];
@@ -76,25 +80,37 @@ enum MENU_PAGE {
 
 void init_gpio() {
 
-    uint32_t mask = 0;
-    mask |= (1 << PORT_A_DIR_PIN);
-    mask |= (1 << PORT_A_LED_PIN);
-    mask |= (1 << PORT_B_DIR_PIN);
-    mask |= (1 << PORT_B_LED_PIN);
-    mask |= (1 << MENU_BUTTON_PIN);
-    mask |= (1 << UP_BUTTON_PIN);
-    mask |= (1 << DOWN_BUTTON_PIN);
-    mask |= (1 << EXIT_BUTTON_PIN);
-    mask |= (1 << ETH_INT_PIN);
-    mask |= (1 << ETH_RST_PIN);
+    uint32_t mask_all = 0;
+    mask_all |= (1 << PORT_A_DIR_PIN);
+    mask_all |= (1 << PORT_A_LED_PIN);
+    mask_all |= (1 << PORT_B_DIR_PIN);
+    mask_all |= (1 << PORT_B_LED_PIN);
+    mask_all |= (1 << MENU_BUTTON_PIN);
+    mask_all |= (1 << UP_BUTTON_PIN);
+    mask_all |= (1 << DOWN_BUTTON_PIN);
+    mask_all |= (1 << EXIT_BUTTON_PIN);
+    mask_all |= (1 << ETH_INT_PIN);
+    mask_all |= (1 << ETH_RST_PIN);
 
-    gpio_init_mask(mask);
+    uint32_t mask_inp = 0;
+    mask_inp |= (1 << MENU_BUTTON_PIN);
+    mask_inp |= (1 << UP_BUTTON_PIN);
+    mask_inp |= (1 << DOWN_BUTTON_PIN);
+    mask_inp |= (1 << EXIT_BUTTON_PIN);
+    mask_inp |= (1 << ETH_INT_PIN);
 
-    // ETH_INT_PIN is an input. The rest are outputs.
-    // So remove the ETH_INT_PIN from the mask.
-    mask &= ~(1 << ETH_INT_PIN);
-    gpio_set_dir(ETH_INT_PIN, GPIO_IN);
-    gpio_set_dir_out_masked(mask);
+    uint32_t mask_out = mask_all & ~mask_inp;
+
+    gpio_init_mask(mask_all);
+    gpio_set_dir_in_masked(mask_inp);
+    gpio_set_dir_out_masked(mask_out);
+
+    // there is no masked version of pullup/down.
+    gpio_pull_up(MENU_BUTTON_PIN);
+    gpio_pull_up(UP_BUTTON_PIN);
+    gpio_pull_up(DOWN_BUTTON_PIN);
+    gpio_pull_up(EXIT_BUTTON_PIN);
+    gpio_pull_up(ETH_INT_PIN);      // needed for interrupt? will figure out later
 
     gpio_set_drive_strength(PORT_A_LED_PIN, GPIO_DRIVE_STRENGTH_12MA);
     gpio_set_drive_strength(PORT_B_LED_PIN, GPIO_DRIVE_STRENGTH_12MA);
@@ -110,8 +126,14 @@ void init_oled() {
     gpio_pull_up(DISPLAY_SCL_PIN);
 }
 
+void draw_menu_base(pico_ssd1306::SSD1306 *ssd1306) {
+    ssd1306->clear();
+    drawLine(ssd1306, 0, 15, 128, 15);
+    // TODO: draw status icons
+}
 
 void main_core_1 () {
+    // TODO:
     // handle artnet connection and send the dmx data to the pio's
     // input isn't supported yet. only output.
 }
@@ -122,10 +144,13 @@ int main () {
     stdio_init_all();
     init_gpio();
     init_oled();
+    
+    gpio_put(PORT_A_LED_PIN, 1);
 
 
     SSD1306 display = SSD1306(i2c0, 0x3c, Size::W128xH64);
     display.setOrientation(0);
+    display.clear();
     
     drawText(&display, font_12x16, "line 1 icons", 0, 0);
     drawText(&display, font_12x16, "line 2 menu", 0, 16);
@@ -139,12 +164,16 @@ int main () {
     // ---------
 
     
-    MENU_PAGE current_page = MAIN;
+    MENU_PAGE current_page = MENU_PAGE::MAIN;
     uint8_t current_selection = 0;
-    bool button_menu_pressed = false;
-    bool button_up_pressed = false;
-    bool button_down_pressed = false;
-    bool button_exit_pressed = false;
+    
+    draw_menu_base(&display);
+    while (true) {
+
+    bool button_menu_pressed = !gpio_get(MENU_BUTTON_PIN);
+    bool button_up_pressed = !gpio_get(UP_BUTTON_PIN);
+    bool button_down_pressed = !gpio_get(DOWN_BUTTON_PIN);
+    bool button_exit_pressed = !gpio_get(EXIT_BUTTON_PIN);
 
     switch (current_page) {
 
@@ -176,6 +205,20 @@ int main () {
                         current_selection = 0;
                         break;
                 }
+            } 
+            draw_menu_base(&display);
+            drawText(&display, FONT, ">", 0, (current_selection + 1) * 16);
+            drawText(&display, FONT, "Network", 16, 16);
+            drawText(&display, FONT, "Ports", 16, 32);
+            drawText(&display, FONT, "Status", 16, 48);
+            switch(current_selection) {
+                case 0:
+                    // TODO: invert "network"
+                case 1:
+                    // TODO: invert "ports"
+                case 2:
+                    // TODO: invert "status"
+            display.sendBuffer(); 
             }
             break;
 
@@ -474,6 +517,6 @@ int main () {
             break;
 
     }
-    
+    } 
    
 };
