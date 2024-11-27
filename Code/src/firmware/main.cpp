@@ -25,6 +25,8 @@ using namespace pico_ssd1306;
 
 
 
+// Menu structure (https://www.tldraw.com/ro/jS2uV4zSO97DEFvRHu4y5)
+//
 // MAIN 
 //  - Network
 //      - ip
@@ -68,13 +70,13 @@ enum MENU_PAGE {
     B_UNIVERSE,
     STATUS,
     LOCK            // Lock/unlock the menu by holding the menu button for 3 seconds.
-}
+};
 
 
 
 void init_gpio() {
 
-    int mask = 0;
+    uint32_t mask = 0;
     mask |= (1 << PORT_A_DIR_PIN);
     mask |= (1 << PORT_A_LED_PIN);
     mask |= (1 << PORT_B_DIR_PIN);
@@ -107,6 +109,7 @@ void init_oled() {
     gpio_pull_up(DISPLAY_SDA_PIN);
     gpio_pull_up(DISPLAY_SCL_PIN);
 }
+
 
 void main_core_1 () {
     // handle artnet connection and send the dmx data to the pio's
@@ -146,7 +149,6 @@ int main () {
     switch (current_page) {
 
         case MENU_PAGE::MAIN:
-            current_selection = 0;
             if (button_down_pressed) {
                 if (current_selection < 2) {
                     current_selection++;
@@ -163,12 +165,15 @@ int main () {
                 switch (current_selection) {
                     case 0:
                         current_page = MENU_PAGE::NETWORK;
+                        current_selection = 0;
                         break;
                     case 1:
                         current_page = MENU_PAGE::PORTS;
+                        current_selection = 0;
                         break;
                     case 2:
                         current_page = MENU_PAGE::STATUS;
+                        current_selection = 0;
                         break;
                 }
             }
@@ -177,9 +182,11 @@ int main () {
         case MENU_PAGE::NETWORK:
             if (button_menu_pressed) {
                 current_page = MENU_PAGE::IP;
+                current_selection = 0;
                 break;
             } else if (button_exit_pressed) {
                 current_page = MENU_PAGE::MAIN;
+                current_selection = 0;
                 break;
             }
             break;
@@ -187,9 +194,11 @@ int main () {
         case MENU_PAGE::IP:
             if (button_menu_pressed) {
                 current_page = MENU_PAGE::DHCP;
+                current_selection = 0;
                 break;
             } else if (button_exit_pressed) {
                 current_page = MENU_PAGE::NETWORK;
+                current_selection = 0;
                 break;
             }
             break;
@@ -215,10 +224,12 @@ int main () {
                         break;
                     case 1:
                         current_page = MENU_PAGE::DHCP_STATIC;
+                        current_selection = 0;
                         break;
                 }
             } else if (button_exit_pressed) {
                 current_page = MENU_PAGE::IP;
+                current_selection = 0;
             }
             break;
 
@@ -246,6 +257,7 @@ int main () {
                 }
             } else if (button_exit_pressed) {
                 current_page = MENU_PAGE::DHCP;
+                current_selection = 0;
                 break;
             }
                     
@@ -268,13 +280,16 @@ int main () {
                 switch (current_selection) {
                     case 0:
                         current_page = MENU_PAGE::A;
+                        current_selection = 0;
                         break;
                     case 1:
                         current_page = MENU_PAGE::B;
+                        current_selection = 0;
                         break;
                 }
             } else if (button_exit_pressed) {
                 current_page = MENU_PAGE::MAIN;
+                current_selection = 0;
             }
             break;
 
@@ -295,16 +310,20 @@ int main () {
                 switch (current_selection) {
                     case 0:
                         current_page = MENU_PAGE::A_STATUS;
+                        current_selection = 0;
                         break;
                     case 1:
                         current_page = MENU_PAGE::A_DIRECTION;
+                        current_selection = 0;
                         break;
                     case 2:
                         current_page = MENU_PAGE::A_UNIVERSE;
+                        current_selection = 0;
                         break;
                 }
             } else if (button_exit_pressed) {
                 current_page = MENU_PAGE::PORTS;
+                current_selection = 0;
             }
             break;
 
@@ -313,6 +332,7 @@ int main () {
                 // enable/disable port A
             } else if (button_exit_pressed) {
                 current_page = MENU_PAGE::A;
+                current_selection = 0;
             }
             break;
 
@@ -321,6 +341,7 @@ int main () {
                 // set port A direction
             } else if (button_exit_pressed) {
                 current_page = MENU_PAGE::A;
+                current_selection = 0;
             }
             break;
             
@@ -351,6 +372,7 @@ int main () {
                 }
             } else if (button_exit_pressed) {
                 current_page = MENU_PAGE::A;
+                current_selection = 0;
             }
             break;
 
@@ -371,16 +393,20 @@ int main () {
                 switch (current_selection) {
                     case 0:
                         current_page = MENU_PAGE::B_STATUS;
+                        current_selection = 0;
                         break;
                     case 1:
                         current_page = MENU_PAGE::B_DIRECTION;
+                        current_selection = 0;
                         break;
                     case 2:
                         current_page = MENU_PAGE::B_UNIVERSE;
+                        current_selection = 0;
                         break;
                 }
             } else if (button_exit_pressed) {
                 current_page = MENU_PAGE::PORTS;
+                current_selection = 0;
             }
             break;
 
@@ -389,6 +415,7 @@ int main () {
                 // enable/disable port B
             } else if (button_exit_pressed) {
                 current_page = MENU_PAGE::B;
+                current_selection = 0;
             }
             break;
 
@@ -397,6 +424,7 @@ int main () {
                 // set port B direction
             } else if (button_exit_pressed) {
                 current_page = MENU_PAGE::B;
+                current_selection = 0;
             }
             break;
 
@@ -427,18 +455,21 @@ int main () {
                 }
             } else if (button_exit_pressed) {
                 current_page = MENU_PAGE::B;
+                current_selection = 0;
             }
             break;
 
         case MENU_PAGE::STATUS:
             if (button_exit_pressed) {
                 current_page = MENU_PAGE::MAIN;
+                current_selection = 0;
             }
             break;
 
         case MENU_PAGE::LOCK:
-            if (button_menu_pressed) {
-                // unlock
+            if (button_exit_pressed) {
+                current_page = MENU_PAGE::MAIN;
+                current_selection = 0;
             }
             break;
 
