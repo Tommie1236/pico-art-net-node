@@ -145,7 +145,7 @@ int main () {
 
     switch (current_page) {
 
-        case MAIN:
+        case MENU_PAGE::MAIN:
             current_selection = 0;
             if (button_down_pressed) {
                 if (current_selection < 2) {
@@ -174,7 +174,7 @@ int main () {
             }
             break;
 
-        case NETWORK:
+        case MENU_PAGE::NETWORK:
             if (button_menu_pressed) {
                 current_page = MENU_PAGE::IP;
                 break;
@@ -184,7 +184,7 @@ int main () {
             }
             break;
 
-        case IP:
+        case MENU_PAGE::IP:
             if (button_menu_pressed) {
                 current_page = MENU_PAGE::DHCP;
                 break;
@@ -194,7 +194,7 @@ int main () {
             }
             break;
 
-        case DHCP:
+        case MENU_PAGE::DHCP:
             current_selection = 0;
             if (button_down_pressed) {
                 if (current_selection < 1) {
@@ -222,7 +222,7 @@ int main () {
             }
             break;
 
-        case DHCP_STATIC:
+        case MENU_PAGE::DHCP_STATIC:
             if (button_down_pressed) {
                 if (current_selection < 1) {
                     current_selection++;
@@ -251,7 +251,7 @@ int main () {
                     
             break;
 
-        case PORTS:
+        case MENU_PAGE::PORTS:
             if (button_down_pressed) {
                 if (current_selection < 1) {
                     current_selection++;
@@ -278,7 +278,7 @@ int main () {
             }
             break;
 
-        case A:
+        case MENU_PAGE::A:
             if (button_down_pressed) {
                 if (current_selection < 2) {
                     current_selection++;
@@ -308,7 +308,7 @@ int main () {
             }
             break;
 
-        case A_STATUS:
+        case MENU_PAGE::A_STATUS:
             if (button_menu_pressed) {
                 // enable/disable port A
             } else if (button_exit_pressed) {
@@ -316,7 +316,7 @@ int main () {
             }
             break;
 
-        case A_DIRECTION:
+        case MENU_PAGE::A_DIRECTION:
             if (button_menu_pressed) {
                 // set port A direction
             } else if (button_exit_pressed) {
@@ -324,7 +324,7 @@ int main () {
             }
             break;
             
-        case A_UNIVERSE:
+        case MENU_PAGE::A_UNIVERSE:
             if (button_down_pressed) {
                 if (current_selection < 2) {
                     current_selection++;
@@ -354,7 +354,7 @@ int main () {
             }
             break;
 
-        case B:
+        case MENU_PAGE::B:
             if (button_down_pressed) {
                 if (current_selection < 2) {
                     current_selection++;
@@ -384,7 +384,7 @@ int main () {
             }
             break;
 
-        case B_STATUS:
+        case MENU_PAGE::B_STATUS:
             if (button_menu_pressed) {
                 // enable/disable port B
             } else if (button_exit_pressed) {
@@ -392,7 +392,7 @@ int main () {
             }
             break;
 
-        case B_DIRECTION:
+        case MENU_PAGE::B_DIRECTION:
             if (button_menu_pressed) {
                 // set port B direction
             } else if (button_exit_pressed) {
@@ -400,7 +400,7 @@ int main () {
             }
             break;
 
-        case B_UNIVERSE:
+        case MENU_PAGE::B_UNIVERSE:
             if (button_down_pressed) {
                 if (current_selection < 2) {
                     current_selection++;
@@ -430,13 +430,13 @@ int main () {
             }
             break;
 
-        case STATUS:
+        case MENU_PAGE::STATUS:
             if (button_exit_pressed) {
                 current_page = MENU_PAGE::MAIN;
             }
             break;
 
-        case LOCK:
+        case MENU_PAGE::LOCK:
             if (button_menu_pressed) {
                 // unlock
             }
