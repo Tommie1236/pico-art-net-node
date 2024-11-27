@@ -1,4 +1,7 @@
 #include <stdio.h>
+#include <string>
+#include <vector>
+
 #include "hardware/gpio.h"
 #include "hardware/i2c.h"
 #include "pico/stdlib.h"
@@ -132,6 +135,28 @@ void draw_menu_base(pico_ssd1306::SSD1306 *ssd1306) {
     // TODO: draw status icons
 }
 
+void draw_menu_content(pico_ssd1306::SSD1306 *ssd1306, std::string title, std::vector<std::string> content) {
+    ssd1306->clear();
+    drawLine(ssd1306, 0, 15, 128, 15);
+    // Draw the title
+    drawText(ssd1306, FONT, title.c_str(), 0, 0);
+    // Draw the menu items
+    for (size_t i = 0; i < content.size(); ++i) {
+        drawText(ssd1306, FONT, content[i].c_str(), 0, 16 + i * 16);
+    }
+}
+
+void draw_menu_selected(pico_ssd1306::SSD1306 *ssd1306, uint8_t selected) {
+    fillRect(ssd1306, 0, 16 + selected * 16, 128, 31 + selected * 16, WriteMode::INVERT);
+}
+
+void draw_menu(pico_ssd1306::SSD1306 *ssd1306, std::string title, std::vector<std::string> content, uint8_t selected) {
+    draw_menu_base(ssd1306);
+    draw_menu_content(ssd1306, title, content);
+    draw_menu_selected(ssd1306, selected);
+    ssd1306->sendBuffer();
+}
+
 void main_core_1 () {
     // TODO:
     // handle artnet connection and send the dmx data to the pio's
@@ -152,14 +177,6 @@ int main () {
     display.setOrientation(0);
     display.clear();
     
-    drawText(&display, font_12x16, "line 1 icons", 0, 0);
-    drawText(&display, font_12x16, "line 2 menu", 0, 16);
-    drawText(&display, font_12x16, "line 3 menu", 0, 32);
-    drawText(&display, font_12x16, "line 4 menu", 0, 48);
-    
-    display.sendBuffer(); 
-
-
 
     // ---------
 
@@ -169,7 +186,6 @@ int main () {
     
     draw_menu_base(&display);
     while (true) {
-
     bool button_menu_pressed = !gpio_get(MENU_BUTTON_PIN);
     bool button_up_pressed = !gpio_get(UP_BUTTON_PIN);
     bool button_down_pressed = !gpio_get(DOWN_BUTTON_PIN);
@@ -195,55 +211,67 @@ int main () {
                     case 0:
                         current_page = MENU_PAGE::NETWORK;
                         current_selection = 0;
+                        printf("enter menu network\n");
+                        sleep_ms(100);
                         break;
                     case 1:
                         current_page = MENU_PAGE::PORTS;
                         current_selection = 0;
+                        printf("enter menu ports\n");
+                        sleep_ms(100);
                         break;
                     case 2:
                         current_page = MENU_PAGE::STATUS;
                         current_selection = 0;
+                        printf("enter menu status\n");
+                        sleep_ms(100);
                         break;
                 }
-            } 
-            draw_menu_base(&display);
-            drawText(&display, FONT, ">", 0, (current_selection + 1) * 16);
-            drawText(&display, FONT, "Network", 16, 16);
-            drawText(&display, FONT, "Ports", 16, 32);
-            drawText(&display, FONT, "Status", 16, 48);
-            switch(current_selection) {
-                case 0:
-                    // TODO: invert "network"
-                case 1:
-                    // TODO: invert "ports"
-                case 2:
-                    // TODO: invert "status"
-            display.sendBuffer(); 
+            } else if (button_exit_pressed) {
+                current_selection = 0;
             }
+            draw_menu(&display, "Main", {"Network", "Ports", "Status"}, current_selection);
             break;
 
         case MENU_PAGE::NETWORK:
             if (button_menu_pressed) {
                 current_page = MENU_PAGE::IP;
                 current_selection = 0;
+                printf("enter menu ip\n");
+                sleep_ms(100);
                 break;
             } else if (button_exit_pressed) {
                 current_page = MENU_PAGE::MAIN;
                 current_selection = 0;
+                printf("enter menu main\n");
+                sleep_ms(100);
                 break;
             }
+            draw_menu(&display, "Network", {"IP"}, current_selection);
             break;
 
         case MENU_PAGE::IP:
             if (button_menu_pressed) {
                 current_page = MENU_PAGE::DHCP;
                 current_selection = 0;
+                printf("enter menu dhcp\n");
+                sleep_ms(100);
                 break;
             } else if (button_exit_pressed) {
                 current_page = MENU_PAGE::NETWORK;
                 current_selection = 0;
+                printf("enter menu network\n");
+                sleep_ms(100);
                 break;
             }
+            // TODO: update menu drawing. is different because the menu starts on line 3 instead of 2.
+            draw_menu_base(&display);
+            drawText(&display, FONT, "IP-Add.", 0, 0);
+            drawText(&display, FONT, "255.255.255.255", 0, 16);
+            drawText(&display, FONT, ">", 0, 32);
+            drawText(&display, FONT, "DHCP", 16, 32);
+            // TODO: invert selected option. 
+            display.sendBuffer();
             break;
 
         case MENU_PAGE::DHCP:
@@ -268,15 +296,28 @@ int main () {
                     case 1:
                         current_page = MENU_PAGE::DHCP_STATIC;
                         current_selection = 0;
+                        printf("enter menu dhcp static\n");
                         break;
                 }
             } else if (button_exit_pressed) {
                 current_page = MENU_PAGE::IP;
                 current_selection = 0;
+                printf("enter menu ip\n");
+                sleep_ms(100);
+                break;
             }
+            draw_menu_base(&display);
+            drawText(&display, FONT, "DHCP", 0, 0);
+            drawText(&display, FONT, ">", 0, 16 + current_selection * 16);
+            drawText(&display, FONT, "Enable DHCP", 16, 16); // TODO: change to disable if dhcp is enabled
+            drawText(&display, FONT, "Static IP", 16, 32);
+            // TODO: invert selected option
+            display.sendBuffer();            
             break;
 
         case MENU_PAGE::DHCP_STATIC:
+            // TODO: up/down buttons work little strange rn. FIX IT.
+            // TODO: enter/back buttons work different when entering info. implement later.
             if (button_down_pressed) {
                 if (current_selection < 1) {
                     current_selection++;
@@ -301,9 +342,16 @@ int main () {
             } else if (button_exit_pressed) {
                 current_page = MENU_PAGE::DHCP;
                 current_selection = 0;
+                printf("enter menu dhcp\n");
                 break;
             }
-                    
+            draw_menu_base(&display);
+            drawText(&display, FONT, "Static", 0, 0);
+            drawText(&display, FONT, ">", 0, 16 + current_selection * 16);
+            drawText(&display, FONT, "ip: aaa.bbb.ccc.ddd", 16, 16);
+            drawText(&display, FONT, "sn: sub.net.sub.net", 16, 32);
+            // TODO: invert selected option
+            display.sendBuffer();                    
             break;
 
         case MENU_PAGE::PORTS:
@@ -324,16 +372,28 @@ int main () {
                     case 0:
                         current_page = MENU_PAGE::A;
                         current_selection = 0;
+                        printf("enter menu A\n");
                         break;
                     case 1:
                         current_page = MENU_PAGE::B;
                         current_selection = 0;
+                        printf("enter menu B\n");
                         break;
                 }
             } else if (button_exit_pressed) {
                 current_page = MENU_PAGE::MAIN;
                 current_selection = 0;
+                printf("enter menu main\n");
+                sleep_ms(100);
+                break;
             }
+            draw_menu_base(&display);
+            drawText(&display, FONT, "Ports", 0, 0);
+            drawText(&display, FONT, ">", 0, 16 + current_selection * 16);
+            drawText(&display, FONT, "Port A", 16, 16);
+            drawText(&display, FONT, "Port B", 16, 32);
+            // TODO: invert selected option
+            display.sendBuffer();
             break;
 
         case MENU_PAGE::A:
@@ -354,29 +414,63 @@ int main () {
                     case 0:
                         current_page = MENU_PAGE::A_STATUS;
                         current_selection = 0;
+                        printf("enter menu A status\n");
                         break;
                     case 1:
                         current_page = MENU_PAGE::A_DIRECTION;
                         current_selection = 0;
+                        printf("enter menu A direction\n");
                         break;
                     case 2:
                         current_page = MENU_PAGE::A_UNIVERSE;
                         current_selection = 0;
+                        printf("enter menu A universe\n");
                         break;
                 }
             } else if (button_exit_pressed) {
                 current_page = MENU_PAGE::PORTS;
                 current_selection = 0;
+                printf("enter menu ports\n");
             }
+            draw_menu_base(&display);
+            drawText(&display, FONT, "Port A", 0, 0);
+            drawText(&display, FONT, ">", 0, 16 + current_selection * 16);
+            drawText(&display, FONT, "Status", 16, 16);
+            drawText(&display, FONT, "Direction", 16, 32);
+            drawText(&display, FONT, "Universe", 16, 48);
+            // TODO: invert selected option
+            display.sendBuffer();
             break;
 
         case MENU_PAGE::A_STATUS:
-            if (button_menu_pressed) {
+            if (button_down_pressed) {
+                if (current_selection < 1) {
+                    current_selection++;
+                } else {
+                    current_selection = 0;
+                }
+            } else if (button_up_pressed) {
+                if (current_selection > 0) {
+                    current_selection--;
+                } else {
+                    current_selection = 1;
+                }
+            } else if (button_menu_pressed) {
                 // enable/disable port A
             } else if (button_exit_pressed) {
                 current_page = MENU_PAGE::A;
                 current_selection = 0;
+                printf("enter menu A\n");
+                sleep_ms(100);
+                break;
             }
+            draw_menu_base(&display);
+            drawText(&display, FONT, "Status A", 0, 0);
+            drawText(&display, FONT, ">", 0, 16 + current_selection * 16);
+            drawText(&display, FONT, "Enable", 16, 16);
+            drawText(&display, FONT, "Disable", 16, 32);
+            // TODO: invert selected option and display a tick on the enabled/disabled option
+            display.sendBuffer();
             break;
 
         case MENU_PAGE::A_DIRECTION:
@@ -385,7 +479,26 @@ int main () {
             } else if (button_exit_pressed) {
                 current_page = MENU_PAGE::A;
                 current_selection = 0;
+                printf("enter menu A\n");
+                sleep_ms(100);
+                break;
+            } else if (button_down_pressed) {
+                if (current_selection < 1) {
+                    current_selection++;
+                } else {
+                    current_selection = 0;
+                }
+            } else if (button_up_pressed) {
+                if (current_selection > 0) {
+                    current_selection--;
+                } else {
+                    current_selection = 1;
+                }
             }
+            draw_menu_base(&display);
+            draw_menu_content(&display, "Direction A", {"Output", "Input"});
+            draw_menu_selected(&display, current_selection);
+            display.sendBuffer();
             break;
             
         case MENU_PAGE::A_UNIVERSE:
@@ -416,7 +529,11 @@ int main () {
             } else if (button_exit_pressed) {
                 current_page = MENU_PAGE::A;
                 current_selection = 0;
+                printf("enter menu A\n");
+                sleep_ms(100);
+                break;
             }
+            draw_menu(&display, "Universe A", {"Net", "Subnet", "Universe"}, current_selection);
             break;
 
         case MENU_PAGE::B:
@@ -437,20 +554,34 @@ int main () {
                     case 0:
                         current_page = MENU_PAGE::B_STATUS;
                         current_selection = 0;
+                        printf("enter menu B status\n");
                         break;
                     case 1:
                         current_page = MENU_PAGE::B_DIRECTION;
                         current_selection = 0;
+                        printf("enter menu B direction\n");
                         break;
                     case 2:
                         current_page = MENU_PAGE::B_UNIVERSE;
                         current_selection = 0;
+                        printf("enter menu B universe\n");
                         break;
                 }
             } else if (button_exit_pressed) {
                 current_page = MENU_PAGE::PORTS;
                 current_selection = 0;
+                printf("enter menu ports\n");
+                sleep_ms(100);
+                break;
             }
+            draw_menu_base(&display);
+            drawText(&display, FONT, "Port B", 0, 0);
+            drawText(&display, FONT, ">", 0, 16 + current_selection * 16);
+            drawText(&display, FONT, "Status", 16, 16);
+            drawText(&display, FONT, "Direction", 16, 32);
+            drawText(&display, FONT, "Universe", 16, 48);
+            // TODO: invert selected option
+            display.sendBuffer();
             break;
 
         case MENU_PAGE::B_STATUS:
@@ -459,6 +590,9 @@ int main () {
             } else if (button_exit_pressed) {
                 current_page = MENU_PAGE::B;
                 current_selection = 0;
+                printf("enter menu B\n");
+                sleep_ms(100);
+                break;
             }
             break;
 
@@ -468,6 +602,9 @@ int main () {
             } else if (button_exit_pressed) {
                 current_page = MENU_PAGE::B;
                 current_selection = 0;
+                printf("enter menu B\n");
+                sleep_ms(100);
+                break;
             }
             break;
 
@@ -499,21 +636,37 @@ int main () {
             } else if (button_exit_pressed) {
                 current_page = MENU_PAGE::B;
                 current_selection = 0;
+                printf("enter menu B\n");
+                sleep_ms(100);
+                break;
             }
             break;
 
         case MENU_PAGE::STATUS:
             if (button_exit_pressed) {
-                current_page = MENU_PAGE::MAIN;
+                current_page = MENU_PAGE::LOCK;
                 current_selection = 0;
+                printf("enter menu lock\n");
+                sleep_ms(100);
+                break;
             }
+            draw_menu_base(&display);
+            drawText(&display, FONT, "Status", 0, 0);
+            drawText(&display, FONT, "Nothing rn", 0, 16);
+            display.sendBuffer();
             break;
 
         case MENU_PAGE::LOCK:
             if (button_exit_pressed) {
                 current_page = MENU_PAGE::MAIN;
                 current_selection = 0;
+                printf("enter menu main\n");
+                sleep_ms(100);
+                break;
             }
+            display.clear();
+            drawText(&display, FONT, "Locked", 24, 24);
+            display.sendBuffer();
             break;
 
     }
