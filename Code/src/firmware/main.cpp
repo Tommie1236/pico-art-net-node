@@ -16,17 +16,59 @@
 
 using namespace pico_ssd1306;
 
-DmxOutput dmx_out[2];
+//DmxOutput dmx_out[2];
 //DmxInput  dmx_in[2];
 
 
-uint8_t universe_A[UNIVERSE_LENGTH + 1];
-uint8_t universe_B[UNIVERSE_LENGTH + 1];
+//uint8_t universe_A[UNIVERSE_LENGTH + 1];
+//uint8_t universe_B[UNIVERSE_LENGTH + 1];
 
 
 
+// MAIN 
+//  - Network
+//      - ip
+//          view current ip
+//          - dhcp
+//              enable
+//              - static
+//                  set ip
+//                  set subnet
+//  - Ports
+//      - A
+//      - B
+//          - status
+//              enable
+//              disable
+//          - direction
+//              output
+//              input       // maybe support later
+//          - universe
+//              net
+//              subnet
+//              universe
+//  - Status ??
+//
+//
 
-
+enum MENU_PAGE {
+    MAIN,
+    NETWORK,
+    IP,
+    DHCP, 
+    DHCP_STATIC,
+    PORTS,
+    A,
+    A_STATUS,
+    A_DIRECTION,
+    A_UNIVERSE,
+    B,
+    B_STATUS,
+    B_DIRECTION,
+    B_UNIVERSE,
+    STATUS,
+    LOCK            // Lock/unlock the menu by holding the menu button for 3 seconds.
+}
 
 
 
@@ -88,5 +130,319 @@ int main () {
     drawText(&display, font_12x16, "line 4 menu", 0, 48);
     
     display.sendBuffer(); 
+
+
+
+    // ---------
+
+    
+    MENU_PAGE current_page = MAIN;
+    uint8_t current_selection = 0;
+    bool button_menu_pressed = false;
+    bool button_up_pressed = false;
+    bool button_down_pressed = false;
+    bool button_exit_pressed = false;
+
+    switch (current_page) {
+
+        case MAIN:
+            current_selection = 0;
+            if (button_down_pressed) {
+                if (current_selection < 2) {
+                    current_selection++;
+                } else {
+                    current_selection = 0;
+                }
+            } else if (button_up_pressed) {
+                if (current_selection > 0) {
+                    current_selection--;
+                } else {
+                    current_selection = 2;
+                }
+            } else if (button_menu_pressed) {
+                switch (current_selection) {
+                    case 0:
+                        current_page = MENU_PAGE::NETWORK;
+                        break;
+                    case 1:
+                        current_page = MENU_PAGE::PORTS;
+                        break;
+                    case 2:
+                        current_page = MENU_PAGE::STATUS;
+                        break;
+                }
+            }
+            break;
+
+        case NETWORK:
+            if (button_menu_pressed) {
+                current_page = MENU_PAGE::IP;
+                break;
+            } else if (button_exit_pressed) {
+                current_page = MENU_PAGE::MAIN;
+                break;
+            }
+            break;
+
+        case IP:
+            if (button_menu_pressed) {
+                current_page = MENU_PAGE::DHCP;
+                break;
+            } else if (button_exit_pressed) {
+                current_page = MENU_PAGE::NETWORK;
+                break;
+            }
+            break;
+
+        case DHCP:
+            current_selection = 0;
+            if (button_down_pressed) {
+                if (current_selection < 1) {
+                    current_selection++;
+                } else {
+                    current_selection = 0;
+                } 
+            } else if (button_up_pressed) {
+                if (current_selection > 0) {
+                    current_selection--;
+                } else {
+                    current_selection = 1;
+                }
+            } else if (button_menu_pressed) {
+                switch (current_selection) {
+                    case 0:
+                        // enable dhcp
+                        break;
+                    case 1:
+                        current_page = MENU_PAGE::DHCP_STATIC;
+                        break;
+                }
+            } else if (button_exit_pressed) {
+                current_page = MENU_PAGE::IP;
+            }
+            break;
+
+        case DHCP_STATIC:
+            if (button_down_pressed) {
+                if (current_selection < 1) {
+                    current_selection++;
+                } else {
+                    current_selection = 0;
+                }
+            } else if (button_up_pressed) {
+                if (current_selection > 0) {
+                    current_selection--;
+                } else {
+                    current_selection = 1;
+                }
+            } else if (button_menu_pressed) {
+                switch (current_selection) {
+                    case 0:
+                        // set ip
+                        break;
+                    case 1:
+                        // set subnet
+                        break;
+                }
+            } else if (button_exit_pressed) {
+                current_page = MENU_PAGE::DHCP;
+                break;
+            }
+                    
+            break;
+
+        case PORTS:
+            if (button_down_pressed) {
+                if (current_selection < 1) {
+                    current_selection++;
+                } else {
+                    current_selection = 0;
+                }
+            } else if (button_up_pressed) {
+                if (current_selection > 0) {
+                    current_selection--;
+                } else {
+                    current_selection = 1;
+                }
+            } else if (button_menu_pressed) {
+                switch (current_selection) {
+                    case 0:
+                        current_page = MENU_PAGE::A;
+                        break;
+                    case 1:
+                        current_page = MENU_PAGE::B;
+                        break;
+                }
+            } else if (button_exit_pressed) {
+                current_page = MENU_PAGE::MAIN;
+            }
+            break;
+
+        case A:
+            if (button_down_pressed) {
+                if (current_selection < 2) {
+                    current_selection++;
+                } else {
+                    current_selection = 0;
+                }
+            } else if (button_up_pressed) {
+                if (current_selection > 0) {
+                    current_selection--;
+                } else {
+                    current_selection = 2;
+                }
+            } else if (button_menu_pressed) {
+                switch (current_selection) {
+                    case 0:
+                        current_page = MENU_PAGE::A_STATUS;
+                        break;
+                    case 1:
+                        current_page = MENU_PAGE::A_DIRECTION;
+                        break;
+                    case 2:
+                        current_page = MENU_PAGE::A_UNIVERSE;
+                        break;
+                }
+            } else if (button_exit_pressed) {
+                current_page = MENU_PAGE::PORTS;
+            }
+            break;
+
+        case A_STATUS:
+            if (button_menu_pressed) {
+                // enable/disable port A
+            } else if (button_exit_pressed) {
+                current_page = MENU_PAGE::A;
+            }
+            break;
+
+        case A_DIRECTION:
+            if (button_menu_pressed) {
+                // set port A direction
+            } else if (button_exit_pressed) {
+                current_page = MENU_PAGE::A;
+            }
+            break;
+            
+        case A_UNIVERSE:
+            if (button_down_pressed) {
+                if (current_selection < 2) {
+                    current_selection++;
+                } else {
+                    current_selection = 0;
+                }
+            } else if (button_up_pressed) {
+                if (current_selection > 0) {
+                    current_selection--;
+                } else {
+                    current_selection = 2;
+                }
+            } else if (button_menu_pressed) {
+                switch (current_selection) {
+                    case 0:
+                        // set net
+                        break;
+                    case 1:
+                        // set subnet
+                        break;
+                    case 2:
+                        // set universe
+                        break;
+                }
+            } else if (button_exit_pressed) {
+                current_page = MENU_PAGE::A;
+            }
+            break;
+
+        case B:
+            if (button_down_pressed) {
+                if (current_selection < 2) {
+                    current_selection++;
+                } else {
+                    current_selection = 0;
+                }
+            } else if (button_up_pressed) {
+                if (current_selection > 0) {
+                    current_selection--;
+                } else {
+                    current_selection = 2;
+                }
+            } else if (button_menu_pressed) {
+                switch (current_selection) {
+                    case 0:
+                        current_page = MENU_PAGE::B_STATUS;
+                        break;
+                    case 1:
+                        current_page = MENU_PAGE::B_DIRECTION;
+                        break;
+                    case 2:
+                        current_page = MENU_PAGE::B_UNIVERSE;
+                        break;
+                }
+            } else if (button_exit_pressed) {
+                current_page = MENU_PAGE::PORTS;
+            }
+            break;
+
+        case B_STATUS:
+            if (button_menu_pressed) {
+                // enable/disable port B
+            } else if (button_exit_pressed) {
+                current_page = MENU_PAGE::B;
+            }
+            break;
+
+        case B_DIRECTION:
+            if (button_menu_pressed) {
+                // set port B direction
+            } else if (button_exit_pressed) {
+                current_page = MENU_PAGE::B;
+            }
+            break;
+
+        case B_UNIVERSE:
+            if (button_down_pressed) {
+                if (current_selection < 2) {
+                    current_selection++;
+                } else {
+                    current_selection = 0;
+                }
+            } else if (button_up_pressed) {
+                if (current_selection > 0) {
+                    current_selection--;
+                } else {
+                    current_selection = 2;
+                }
+            } else if (button_menu_pressed) {
+                switch (current_selection) {
+                    case 0:
+                        // set net
+                        break;
+                    case 1:
+                        // set subnet
+                        break;
+                    case 2:
+                        // set universe
+                        break;
+                }
+            } else if (button_exit_pressed) {
+                current_page = MENU_PAGE::B;
+            }
+            break;
+
+        case STATUS:
+            if (button_exit_pressed) {
+                current_page = MENU_PAGE::MAIN;
+            }
+            break;
+
+        case LOCK:
+            if (button_menu_pressed) {
+                // unlock
+            }
+            break;
+
+    }
+    
    
 };
