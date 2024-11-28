@@ -22,18 +22,41 @@
 
 using namespace pico_ssd1306;
 
-using ConfigTypes = std::variant<bool, char[], uint16_t, PORT_STATUS>
-
 #define FONT font_12x16 // TODO: change to smaller font. (create?)
+
+enum MENU_PAGE {
+    MAIN,
+    NETWORK,
+    IP,
+    DHCP, 
+//    DHCP_STATIC,
+    PORTS,
+    A,
+    A_STATUS,
+    A_UNIVERSE,
+    B,
+    B_STATUS,
+    B_UNIVERSE,
+    STATUS,
+    LOCK            // Lock/unlock the menu by holding the menu button for 3 seconds.
+};
+
+enum PORT_STATUS {
+    INPUT,
+    OUTPUT,
+    DISABLED
+};
+
+using ConfigTypes = std::variant<bool, std::string, uint16_t, PORT_STATUS>;
 
 std::unordered_map<std::string, ConfigTypes> config = {
     {"IP", "2.0.0.1"},
     {"SUBNET", "255.0.0.0"},
-    ("DHCP", true),
-    ("PORT_A_STATUS", PORT_STATUS::OUTPUT),
-    ("PORT_A_UNIVERSE", 0x0000),
-    ("PORT_B_STATUS", PORT_STATUS::OUTPUT),
-    ("PORT_B_UNIVERSE", 0x0001)
+    {"DHCP", true},
+    {"PORT_A_STATUS", PORT_STATUS::OUTPUT},
+    {"PORT_A_UNIVERSE", uint16_t(0x0000)},
+    {"PORT_B_STATUS", PORT_STATUS::OUTPUT},
+    {"PORT_B_UNIVERSE", uint16_t(0x0001)}
 };
 
 //DmxOutput dmx_out[2];
@@ -71,30 +94,9 @@ std::unordered_map<std::string, ConfigTypes> config = {
 //
 //
 
-enum MENU_PAGE {
-    MAIN,
-    NETWORK,
-    IP,
-    DHCP, 
-    DHCP_STATIC,
-    PORTS,
-    A,
-    A_STATUS,
-    A_DIRECTION,
-    A_UNIVERSE,
-    B,
-    B_STATUS,
-    B_DIRECTION,
-    B_UNIVERSE,
-    STATUS,
-    LOCK            // Lock/unlock the menu by holding the menu button for 3 seconds.
-};
 
-enum PORT_STATUS {
-    INPUT,
-    OUTPUT,
-    DISABLED
-}
+
+
 
 void init_gpio() {
 
@@ -144,14 +146,10 @@ void init_oled() {
     gpio_pull_up(DISPLAY_SCL_PIN);
 }
 
-void draw_menu_base(pico_ssd1306::SSD1306 *ssd1306) {
+void draw_menu_content(pico_ssd1306::SSD1306 *ssd1306, std::string title, std::vector<std::string> content, bool clear = true) {
+    if (clear) {
     ssd1306->clear();
-    drawLine(ssd1306, 0, 15, 128, 15);
-    // TODO: draw status icons
-}
-
-void draw_menu_content(pico_ssd1306::SSD1306 *ssd1306, std::string title, std::vector<std::string> content) {
-    ssd1306->clear();
+    }
     drawLine(ssd1306, 0, 15, 128, 15);
     // Draw the title
     drawText(ssd1306, FONT, title.c_str(), 0, 0);
@@ -165,11 +163,12 @@ void draw_menu_selected(pico_ssd1306::SSD1306 *ssd1306, uint8_t selected) {
     fillRect(ssd1306, 0, 16 + selected * 16, 128, 31 + selected * 16, WriteMode::INVERT);
 }
 
-void draw_menu(pico_ssd1306::SSD1306 *ssd1306, std::string title, std::vector<std::string> content, uint8_t selected) {
-    draw_menu_base(ssd1306);
+void draw_menu(pico_ssd1306::SSD1306 *ssd1306, std::string title, std::vector<std::string> content, uint8_t selected, bool sendBuffer = true) {
     draw_menu_content(ssd1306, title, content);
     draw_menu_selected(ssd1306, selected);
-    ssd1306->sendBuffer();
+    if (sendBuffer) {
+        ssd1306->sendBuffer();
+    }
 }
 
 void main_core_1 () {
@@ -198,14 +197,20 @@ int main () {
     
     MENU_PAGE current_page = MENU_PAGE::MAIN;
     uint8_t current_selection = 0;
+
+    // for editing ip, subnet, universe, etc.
+    // keeps the focus on the current window to allow editing of values.
+    bool edit_mode = false;
     
-    draw_menu_base(&display);
     while (true) {
+    // Invert pin values because they are active low.
+    // TODO: implement debouncing
     bool button_menu_pressed = !gpio_get(MENU_BUTTON_PIN);
     bool button_up_pressed = !gpio_get(UP_BUTTON_PIN);
     bool button_down_pressed = !gpio_get(DOWN_BUTTON_PIN);
     bool button_exit_pressed = !gpio_get(EXIT_BUTTON_PIN);
 
+    // TODO: refactor the whole menu system. it's still in development but a mess rn.
     switch (current_page) {
 
         case MENU_PAGE::MAIN:
@@ -245,52 +250,46 @@ int main () {
             } else if (button_exit_pressed) {
                 current_selection = 0;
             }
-            draw_menu(&display, "Main", {"Network", "Ports", "Status"}, current_selection);
+            draw_menu(&display, "Main:", {"Network", "Ports", "Status"}, current_selection);
             break;
 
         case MENU_PAGE::NETWORK:
-            if (button_menu_pressed) {
-                current_page = MENU_PAGE::IP;
-                current_selection = 0;
-                printf("enter menu ip\n");
-                sleep_ms(100);
-                break;
+            if (button_down_pressed) {
+                if (current_selection < 1) {
+                    current_selection++;
+                } else {
+                    current_selection = 0;
+                }
+            } else if (button_up_pressed) {
+                if (current_selection > 0) {
+                    current_selection--;
+                } else {
+                    current_selection = 1;
+                }
+            } else if (button_menu_pressed) {
+                switch (current_selection) {
+                    case 0:
+                        current_page = MENU_PAGE::IP;
+                        current_selection = 0;
+                        printf("enter menu ip\n"); 
+                        sleep_ms(100);
+                        break;
+                    case 1:
+                        current_page = MENU_PAGE::DHCP;
+                        current_selection = 0;
+                        printf("enter menu dhcp\n");
+                        break;
+                }
             } else if (button_exit_pressed) {
                 current_page = MENU_PAGE::MAIN;
                 current_selection = 0;
                 printf("enter menu main\n");
                 sleep_ms(100);
-                break;
             }
-            draw_menu(&display, "Network", {"IP"}, current_selection);
-            break;
-
-        case MENU_PAGE::IP:
-            if (button_menu_pressed) {
-                current_page = MENU_PAGE::DHCP;
-                current_selection = 0;
-                printf("enter menu dhcp\n");
-                sleep_ms(100);
-                break;
-            } else if (button_exit_pressed) {
-                current_page = MENU_PAGE::NETWORK;
-                current_selection = 0;
-                printf("enter menu network\n");
-                sleep_ms(100);
-                break;
-            }
-            // TODO: update menu drawing. is different because the menu starts on line 3 instead of 2.
-            draw_menu_base(&display);
-            drawText(&display, FONT, "IP-Add.", 0, 0);
-            drawText(&display, FONT, "255.255.255.255", 0, 16);
-            drawText(&display, FONT, ">", 0, 32);
-            drawText(&display, FONT, "DHCP", 16, 32);
-            // TODO: invert selected option. 
-            display.sendBuffer();
+            draw_menu(&display, "Network:", {"IP", "DHCP"}, current_selection);
             break;
 
         case MENU_PAGE::DHCP:
-            current_selection = 0;
             if (button_down_pressed) {
                 if (current_selection < 1) {
                     current_selection++;
@@ -305,67 +304,54 @@ int main () {
                 }
             } else if (button_menu_pressed) {
                 switch (current_selection) {
-                    case 0:
-                        // enable dhcp
+                    case 0: // Enable (DHCP)
+                        config["DHCP"] = true;
                         break;
-                    case 1:
-                        current_page = MENU_PAGE::DHCP_STATIC;
-                        current_selection = 0;
-                        printf("enter menu dhcp static\n");
+                    case 1: // Disable (DHCP)
+                        config["DHCP"] = false;
                         break;
                 }
             } else if (button_exit_pressed) {
-                current_page = MENU_PAGE::IP;
+                current_page = MENU_PAGE::NETWORK;
                 current_selection = 0;
-                printf("enter menu ip\n");
+                printf("enter menu network\n");
                 sleep_ms(100);
                 break;
             }
-            draw_menu_base(&display);
-            drawText(&display, FONT, "DHCP", 0, 0);
-            drawText(&display, FONT, ">", 0, 16 + current_selection * 16);
-            drawText(&display, FONT, "Enable DHCP", 16, 16); // TODO: change to disable if dhcp is enabled
-            drawText(&display, FONT, "Static IP", 16, 32);
-            display.sendBuffer();            
+            draw_menu(&display, "DHCP:", {"Enable", "Disable"}, current_selection);
+            // TODO: add box/tick to selected option
             break;
 
-        case MENU_PAGE::DHCP_STATIC:
-            // TODO: up/down buttons work little strange rn. FIX IT.
-            // TODO: enter/back buttons work different when entering info. implement later.
-            if (button_down_pressed) {
-                if (current_selection < 1) {
-                    current_selection++;
-                } else {
+        case MENU_PAGE::IP:
+            if (!edit_mode) {
+                if (button_exit_pressed) {
+                    current_page = MENU_PAGE::NETWORK;
                     current_selection = 0;
+                    printf("enter menu network\n");
+                    sleep_ms(100);
+                    break;
+                } else if (button_menu_pressed) {
+                    edit_mode = true;
+                } else if (button_down_pressed) {
+                    if (current_selection < 1) {
+                        current_selection++;
+                    } else {
+                        current_selection = 0;
+                    }
+                } else if (button_up_pressed) {
+                    if (current_selection > 0) {
+                        current_selection--;
+                    } else {
+                        current_selection = 1;
+                    }
                 }
-            } else if (button_up_pressed) {
-                if (current_selection > 0) {
-                    current_selection--;
-                } else {
-                    current_selection = 1;
-                }
-            } else if (button_menu_pressed) {
-                switch (current_selection) {
-                    case 0:
-                        // set ip
-                        break;
-                    case 1:
-                        // set subnet
-                        break;
-                }
-            } else if (button_exit_pressed) {
-                current_page = MENU_PAGE::DHCP;
-                current_selection = 0;
-                printf("enter menu dhcp\n");
+                display.clear();
+                draw_menu_selected(&display, current_selection);
+            } else {
                 break;
             }
-            draw_menu_base(&display);
-            drawText(&display, FONT, "Static", 0, 0);
-            drawText(&display, FONT, ">", 0, 16 + current_selection * 16);
-            drawText(&display, FONT, "ip: aaa.bbb.ccc.ddd", 16, 16);
-            drawText(&display, FONT, "sn: sub.net.sub.net", 16, 32);
-            // TODO: invert selected option
-            display.sendBuffer();                    
+            draw_menu_content(&display, "IP:", {}, false);
+            display.sendBuffer();
             break;
 
         case MENU_PAGE::PORTS:
@@ -401,7 +387,7 @@ int main () {
                 sleep_ms(100);
                 break;
             }
-            draw_menu(&display, "Ports", {"Port A", "Port B"}, current_selection);
+            draw_menu(&display, "Ports:", {"Port A", "Port B"}, current_selection);
             break;
 
         case MENU_PAGE::A:
@@ -435,12 +421,12 @@ int main () {
                 current_selection = 0;
                 printf("enter menu ports\n");
             }
-            draw_menu(&display, "Port A", {"Status", "Universe"}, current_selection);
+            draw_menu(&display, "Port A:", {"Status", "Universe"}, current_selection);
             break;
 
         case MENU_PAGE::A_STATUS:
             if (button_down_pressed) {
-                if (current_selection < 1) {
+                if (current_selection < 2) {
                     current_selection++;
                 } else {
                     current_selection = 0;
@@ -449,7 +435,7 @@ int main () {
                 if (current_selection > 0) {
                     current_selection--;
                 } else {
-                    current_selection = 1;
+                    current_selection = 2;
                 }
             } else if (button_menu_pressed) {
                 // enable/disable port A
@@ -460,7 +446,7 @@ int main () {
                 sleep_ms(100);
                 break;
             }
-            draw_menu(&display, "Status A", {"Output", "Input", "Disabled"}, current_selection);
+            draw_menu(&display, "Status A:", {"Output", "Input", "Disabled"}, current_selection);
             break;
 
         case MENU_PAGE::A_UNIVERSE:
@@ -495,8 +481,9 @@ int main () {
                 sleep_ms(100);
                 break;
             }
+            // TODO: cast universe to uint16_t when changing
             // TODO: add a way to set the net/subnet/universe. default menu is temporary.
-            draw_menu(&display, "Universe A", {"Net", "Subnet", "Universe"}, current_selection);
+            draw_menu(&display, "Universe A:", {"Net", "Subnet", "Universe"}, current_selection);
             break;
 
         case MENU_PAGE::B:
@@ -532,12 +519,12 @@ int main () {
                 sleep_ms(100);
                 break;
             }
-            draw_menu(&display, "Port B", {"Status", "Universe"}, current_selection);
+            draw_menu(&display, "Port B:", {"Status", "Universe"}, current_selection);
             break;
 
         case MENU_PAGE::B_STATUS:
             if (button_down_pressed) {
-                if (current_selection < 1) {
+                if (current_selection < 2) {
                     current_selection++;
                 } else {
                     current_selection = 0;
@@ -546,7 +533,7 @@ int main () {
                 if (current_selection > 0) {
                     current_selection--;
                 } else {
-                    current_selection = 1;
+                    current_selection = 2;
                 }
             } else if (button_menu_pressed) {
                 // enable/disable port A
@@ -557,7 +544,7 @@ int main () {
                 sleep_ms(100);
                 break;
             }
-            draw_menu(&display, "Status B", {"Output", "Input", "Disabled"}, current_selection);
+            draw_menu(&display, "Status B:", {"Output", "Input", "Disabled"}, current_selection);
             break;
 
         case MENU_PAGE::B_UNIVERSE:
@@ -592,6 +579,7 @@ int main () {
                 sleep_ms(100);
                 break;
             }
+            // TODO: cast universe to uint16_t when changing
             break;
 
         case MENU_PAGE::STATUS:
@@ -602,8 +590,7 @@ int main () {
                 sleep_ms(100);
                 break;
             }
-            draw_menu_base(&display);
-            drawText(&display, FONT, "Status", 0, 0);
+            draw_menu_content(&display, "Status:", {});
             drawText(&display, FONT, "Nothing rn", 0, 16);
             display.sendBuffer();
             break;
