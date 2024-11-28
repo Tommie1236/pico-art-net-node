@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
+#include <unordered_map>
+#include <variant>
 
 #include "hardware/gpio.h"
 #include "hardware/i2c.h"
@@ -20,8 +22,19 @@
 
 using namespace pico_ssd1306;
 
-#define FONT font_12x16
+using ConfigTypes = std::variant<bool, char[], uint16_t, PORT_STATUS>
 
+#define FONT font_12x16 // TODO: change to smaller font. (create?)
+
+std::unordered_map<std::string, ConfigTypes> config = {
+    {"IP", "2.0.0.1"},
+    {"SUBNET", "255.0.0.0"},
+    ("DHCP", true),
+    ("PORT_A_STATUS", PORT_STATUS::OUTPUT),
+    ("PORT_A_UNIVERSE", 0x0000),
+    ("PORT_B_STATUS", PORT_STATUS::OUTPUT),
+    ("PORT_B_UNIVERSE", 0x0001)
+};
 
 //DmxOutput dmx_out[2];
 //DmxInput  dmx_in[2];
@@ -47,11 +60,9 @@ using namespace pico_ssd1306;
 //      - A
 //      - B
 //          - status
-//              enable
 //              disable
-//          - direction
-//              output
-//              input       // maybe support later
+//              input             // may support later
+//              ouput  
 //          - universe
 //              net
 //              subnet
@@ -79,7 +90,11 @@ enum MENU_PAGE {
     LOCK            // Lock/unlock the menu by holding the menu button for 3 seconds.
 };
 
-
+enum PORT_STATUS {
+    INPUT,
+    OUTPUT,
+    DISABLED
+}
 
 void init_gpio() {
 
@@ -311,7 +326,6 @@ int main () {
             drawText(&display, FONT, ">", 0, 16 + current_selection * 16);
             drawText(&display, FONT, "Enable DHCP", 16, 16); // TODO: change to disable if dhcp is enabled
             drawText(&display, FONT, "Static IP", 16, 32);
-            // TODO: invert selected option
             display.sendBuffer();            
             break;
 
@@ -387,18 +401,12 @@ int main () {
                 sleep_ms(100);
                 break;
             }
-            draw_menu_base(&display);
-            drawText(&display, FONT, "Ports", 0, 0);
-            drawText(&display, FONT, ">", 0, 16 + current_selection * 16);
-            drawText(&display, FONT, "Port A", 16, 16);
-            drawText(&display, FONT, "Port B", 16, 32);
-            // TODO: invert selected option
-            display.sendBuffer();
+            draw_menu(&display, "Ports", {"Port A", "Port B"}, current_selection);
             break;
 
         case MENU_PAGE::A:
             if (button_down_pressed) {
-                if (current_selection < 2) {
+                if (current_selection < 1) {
                     current_selection++;
                 } else {
                     current_selection = 0;
@@ -407,7 +415,7 @@ int main () {
                 if (current_selection > 0) {
                     current_selection--;
                 } else {
-                    current_selection = 2;
+                    current_selection = 1;
                 }
             } else if (button_menu_pressed) {
                 switch (current_selection) {
@@ -417,11 +425,6 @@ int main () {
                         printf("enter menu A status\n");
                         break;
                     case 1:
-                        current_page = MENU_PAGE::A_DIRECTION;
-                        current_selection = 0;
-                        printf("enter menu A direction\n");
-                        break;
-                    case 2:
                         current_page = MENU_PAGE::A_UNIVERSE;
                         current_selection = 0;
                         printf("enter menu A universe\n");
@@ -432,14 +435,7 @@ int main () {
                 current_selection = 0;
                 printf("enter menu ports\n");
             }
-            draw_menu_base(&display);
-            drawText(&display, FONT, "Port A", 0, 0);
-            drawText(&display, FONT, ">", 0, 16 + current_selection * 16);
-            drawText(&display, FONT, "Status", 16, 16);
-            drawText(&display, FONT, "Direction", 16, 32);
-            drawText(&display, FONT, "Universe", 16, 48);
-            // TODO: invert selected option
-            display.sendBuffer();
+            draw_menu(&display, "Port A", {"Status", "Universe"}, current_selection);
             break;
 
         case MENU_PAGE::A_STATUS:
@@ -464,43 +460,9 @@ int main () {
                 sleep_ms(100);
                 break;
             }
-            draw_menu_base(&display);
-            drawText(&display, FONT, "Status A", 0, 0);
-            drawText(&display, FONT, ">", 0, 16 + current_selection * 16);
-            drawText(&display, FONT, "Enable", 16, 16);
-            drawText(&display, FONT, "Disable", 16, 32);
-            // TODO: invert selected option and display a tick on the enabled/disabled option
-            display.sendBuffer();
+            draw_menu(&display, "Status A", {"Output", "Input", "Disabled"}, current_selection);
             break;
 
-        case MENU_PAGE::A_DIRECTION:
-            if (button_menu_pressed) {
-                // set port A direction
-            } else if (button_exit_pressed) {
-                current_page = MENU_PAGE::A;
-                current_selection = 0;
-                printf("enter menu A\n");
-                sleep_ms(100);
-                break;
-            } else if (button_down_pressed) {
-                if (current_selection < 1) {
-                    current_selection++;
-                } else {
-                    current_selection = 0;
-                }
-            } else if (button_up_pressed) {
-                if (current_selection > 0) {
-                    current_selection--;
-                } else {
-                    current_selection = 1;
-                }
-            }
-            draw_menu_base(&display);
-            draw_menu_content(&display, "Direction A", {"Output", "Input"});
-            draw_menu_selected(&display, current_selection);
-            display.sendBuffer();
-            break;
-            
         case MENU_PAGE::A_UNIVERSE:
             if (button_down_pressed) {
                 if (current_selection < 2) {
@@ -533,12 +495,13 @@ int main () {
                 sleep_ms(100);
                 break;
             }
+            // TODO: add a way to set the net/subnet/universe. default menu is temporary.
             draw_menu(&display, "Universe A", {"Net", "Subnet", "Universe"}, current_selection);
             break;
 
         case MENU_PAGE::B:
             if (button_down_pressed) {
-                if (current_selection < 2) {
+                if (current_selection < 1) {
                     current_selection++;
                 } else {
                     current_selection = 0;
@@ -547,7 +510,7 @@ int main () {
                 if (current_selection > 0) {
                     current_selection--;
                 } else {
-                    current_selection = 2;
+                    current_selection = 1;
                 }
             } else if (button_menu_pressed) {
                 switch (current_selection) {
@@ -557,11 +520,6 @@ int main () {
                         printf("enter menu B status\n");
                         break;
                     case 1:
-                        current_page = MENU_PAGE::B_DIRECTION;
-                        current_selection = 0;
-                        printf("enter menu B direction\n");
-                        break;
-                    case 2:
                         current_page = MENU_PAGE::B_UNIVERSE;
                         current_selection = 0;
                         printf("enter menu B universe\n");
@@ -574,19 +532,24 @@ int main () {
                 sleep_ms(100);
                 break;
             }
-            draw_menu_base(&display);
-            drawText(&display, FONT, "Port B", 0, 0);
-            drawText(&display, FONT, ">", 0, 16 + current_selection * 16);
-            drawText(&display, FONT, "Status", 16, 16);
-            drawText(&display, FONT, "Direction", 16, 32);
-            drawText(&display, FONT, "Universe", 16, 48);
-            // TODO: invert selected option
-            display.sendBuffer();
+            draw_menu(&display, "Port B", {"Status", "Universe"}, current_selection);
             break;
 
         case MENU_PAGE::B_STATUS:
-            if (button_menu_pressed) {
-                // enable/disable port B
+            if (button_down_pressed) {
+                if (current_selection < 1) {
+                    current_selection++;
+                } else {
+                    current_selection = 0;
+                }
+            } else if (button_up_pressed) {
+                if (current_selection > 0) {
+                    current_selection--;
+                } else {
+                    current_selection = 1;
+                }
+            } else if (button_menu_pressed) {
+                // enable/disable port A
             } else if (button_exit_pressed) {
                 current_page = MENU_PAGE::B;
                 current_selection = 0;
@@ -594,18 +557,7 @@ int main () {
                 sleep_ms(100);
                 break;
             }
-            break;
-
-        case MENU_PAGE::B_DIRECTION:
-            if (button_menu_pressed) {
-                // set port B direction
-            } else if (button_exit_pressed) {
-                current_page = MENU_PAGE::B;
-                current_selection = 0;
-                printf("enter menu B\n");
-                sleep_ms(100);
-                break;
-            }
+            draw_menu(&display, "Status B", {"Output", "Input", "Disabled"}, current_selection);
             break;
 
         case MENU_PAGE::B_UNIVERSE:
