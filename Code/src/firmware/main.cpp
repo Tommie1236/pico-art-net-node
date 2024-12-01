@@ -96,7 +96,9 @@ std::unordered_map<std::string, ConfigTypes> config = {
 //
 
 
-
+void ip_to_str(std::array<uint8_t, 4> ip, char *ip_str) {
+    sprintf(ip_str, "%03d.%03d.%03d.%03d", ip[0], ip[1], ip[2], ip[3]);
+}
 
 
 void init_gpio() {
@@ -226,6 +228,8 @@ int main () {
     // for editing ip, subnet, universe, etc.
     // keeps the focus on the current window to allow editing of values.
     bool edit_mode = false;
+
+    bool config_changed = false;
     
     while (true) {
     // Invert pin values because they are active low.
@@ -325,9 +329,11 @@ case MENU_PAGE::MAIN: if (button_down_pressed) {
                 switch (current_selection) {
                     case 0: // Enable (DHCP)
                         config["DHCP"] = true;
+                        config_changed = true;
                         break;
                     case 1: // Disable (DHCP)
                         config["DHCP"] = false;
+                        config_changed = true;
                         break;
                 }
             } else if (button_exit_pressed) {
@@ -353,11 +359,11 @@ case MENU_PAGE::MAIN: if (button_down_pressed) {
 
             auto ip = std::get<std::array<uint8_t, 4>>(config["IP"]);
             char ip_str[16];
-            sprintf(ip_str, "%03d.%03d.%03d.%03d", ip[0], ip[1], ip[2], ip[3]);
+            ip_to_str(ip, ip_str);
 
             auto subnet = std::get<std::array<uint8_t, 4>>(config["SUBNET"]);
             char subnet_str[16];
-            sprintf(subnet_str, "%03d.%03d.%03d.%03d", subnet[0], subnet[1], subnet[2], subnet[3]);
+            ip_to_str(subnet, subnet_str);
 
             display.clear();
             draw_menu_content(&display, "IP:", {}, false);
@@ -388,22 +394,85 @@ case MENU_PAGE::MAIN: if (button_down_pressed) {
                         current_selection = 1;
                     }
                 }
+            draw_menu_selected(&display, current_selection);
             } else { // edit mode enabled
                 uint8_t edit_selection = 0;
                 switch (current_selection) {
                     case 0: // IP
-                        while (true) {
-                            sleep_ms(3000);
-                            edit_selection = 1;
-                            edit_selection += 0;
+                        while (edit_mode) {
+                            button_menu_pressed = !gpio_get(MENU_BUTTON_PIN);
+                            button_exit_pressed = !gpio_get(EXIT_BUTTON_PIN);
+                            button_down_pressed = !gpio_get(DOWN_BUTTON_PIN);
+                            button_up_pressed = !gpio_get(UP_BUTTON_PIN);
 
+                            ip_to_str(ip, ip_str);
+                            ip_to_str(subnet, subnet_str);
 
+                            fillRect(&display, 0, 24, 128, 31, WriteMode::SUBTRACT);
+                            drawText(&display, font_8x8, ip_str, 0, 24);
+                            fillRect(&display, 0, 40, 128, 47, WriteMode::SUBTRACT);
+                            drawText(&display, font_8x8, subnet_str, 0, 40);
+                            
+                            switch (edit_selection) {
+                                case 0: // ip part 0                           
+                                    if (current_selection == 0) {   // ip
+                                        fillRect(&display, 0, 24, 24, 31, WriteMode::INVERT);
+                                    } else if (current_selection == 1) {    // subnet
+                                        fillRect(&display, 0, 40, 24, 47, WriteMode::INVERT);
+                                    }
+                                    break;
+                                case 1: // ip part 1
+                                    if (current_selection == 0) {   // ip
+                                        fillRect(&display, 32, 24, 56, 31, WriteMode::INVERT);
+                                    } else if (current_selection == 1) {    // subnet
+                                        fillRect(&display, 32, 40, 56, 47, WriteMode::INVERT);
+                                    }
+                                    break;
+                                case 2: // ip part 2
+                                    if (current_selection == 0) {   // ip
+                                        fillRect(&display, 64, 24, 88, 31, WriteMode::INVERT);
+                                    } else if (current_selection == 1) {    // subnet
+                                        fillRect(&display, 64, 40, 88, 47, WriteMode::INVERT);
+                                    }
+                                    break;
+                                case 3: // ip part 3
+                                    if (current_selection == 0) {   // ip
+                                        fillRect(&display, 96, 24, 120, 31, WriteMode::INVERT);
+                                    } else if (current_selection == 1) {    // subnet
+                                        fillRect(&display, 96, 40, 120, 47, WriteMode::INVERT);
+                                    }
+                                    break;
+                            }
 
+                            display.sendBuffer();
 
-
-
-
-                            break;
+                            if (button_exit_pressed) {
+                                if (current_selection == 0) {
+                                    config["IP"] = ip;
+                                    config_changed = true;
+                                } else if (current_selection == 1) {
+                                    config["SUBNET"] = subnet;
+                                    config_changed = true;
+                                }
+                                edit_mode = false;
+                            } else if (button_menu_pressed) {
+                                edit_selection++;
+                                if (edit_selection > 3) {
+                                    edit_selection = 0;
+                                }
+                            } else if (button_down_pressed) {
+                                if (current_selection == 0) {
+                                    ip[edit_selection]--;
+                                } else if (current_selection == 1) {
+                                    subnet[edit_selection]--;
+                                }
+                            } else if (button_up_pressed) {
+                                if (current_selection == 0) {
+                                    ip[edit_selection]++;
+                                } else if (current_selection == 1) {
+                                    subnet[edit_selection]++;
+                                }
+                            }
                         }
                         break;
                     case 1: // Subnet
@@ -411,7 +480,6 @@ case MENU_PAGE::MAIN: if (button_down_pressed) {
                         break;
                 }
             }
-            draw_menu_selected(&display, current_selection);
             display.sendBuffer();
             break;
         }
