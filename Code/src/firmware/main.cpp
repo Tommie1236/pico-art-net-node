@@ -3,6 +3,8 @@
 #include <vector>
 #include <unordered_map>
 #include <variant>
+#include <array>
+#include <cstdio>
 
 #include "hardware/gpio.h"
 #include "hardware/i2c.h"
@@ -47,11 +49,11 @@ enum PORT_STATUS {
     DISABLED
 };
 
-using ConfigTypes = std::variant<bool, uint8_t[4], uint16_t, PORT_STATUS>;
+using ConfigTypes = std::variant<bool, std::array<uint8_t, 4>, uint16_t, PORT_STATUS>;
 
 std::unordered_map<std::string, ConfigTypes> config = {
-    {"IP", {2, 0, 0, 1}},
-    {"SUBNET", {255, 0, 0, 0}},
+    {"IP", std::array<uint8_t, 4>{2, 0, 0, 1}},
+    {"SUBNET", std::array<uint8_t, 4>{255, 0, 0, 0}},
     {"DHCP", true},
     {"PORT_A_STATUS", PORT_STATUS::OUTPUT},
     {"PORT_A_UNIVERSE", uint16_t(0x0000)},
@@ -180,6 +182,22 @@ void main_core_1 () {
     // TODO:
     // handle artnet connection and send the dmx data to the pio's
     // input isn't supported yet. only output.
+    DmxOutput dmx_out = DmxOutput();
+    uint8_t universe[UNIVERSE_LENGTH + 1];
+
+    gpio_put(PORT_A_DIR_PIN, 1);
+
+    universe[2] = 255;
+    universe[3] = 255;
+    universe[5] = 255;
+
+    dmx_out.begin(PORT_A_TX_PIN);
+
+    while (true) {
+        dmx_out.write(universe, 4);
+        while (dmx_out.busy()) {
+        }
+    }
 }
 
 int main () {
@@ -196,6 +214,8 @@ int main () {
     display.setOrientation(0);
     display.clear();
     
+    
+    multicore_launch_core1(main_core_1);
 
     // ---------
 
@@ -221,9 +241,7 @@ int main () {
     // TODO: switch all menu changes to the menu_switch function.
     // if possible move the debug print to the menu_switch function.
     switch (current_page) {
-
-        case MENU_PAGE::MAIN:
-            if (button_down_pressed) {
+case MENU_PAGE::MAIN: if (button_down_pressed) {
                 if (current_selection < 2) {
                     current_selection++;
                 } else {
@@ -331,13 +349,23 @@ int main () {
             // TODO: add box/tick to selected option
             break;
 
-        case MENU_PAGE::IP:
+        case MENU_PAGE::IP: {
+
+            auto ip = std::get<std::array<uint8_t, 4>>(config["IP"]);
+            char ip_str[16];
+            sprintf(ip_str, "%03d.%03d.%03d.%03d", ip[0], ip[1], ip[2], ip[3]);
+
+            auto subnet = std::get<std::array<uint8_t, 4>>(config["SUBNET"]);
+            char subnet_str[16];
+            sprintf(subnet_str, "%03d.%03d.%03d.%03d", subnet[0], subnet[1], subnet[2], subnet[3]);
+
             display.clear();
             draw_menu_content(&display, "IP:", {}, false);
+
             drawText(&display, font_8x8, "IP Address:", 0, 16);
-            drawText(&display, font_8x8, std::to_string(config["IP"][0]) + "." + std::to_string(config["IP"][1]) + "." + std::to_string(config["IP"][2]) + "." + std::to_string(config["IP"][3]), 0, 24);
+            drawText(&display, font_8x8, ip_str, 0, 24);
             drawText(&display, font_8x8, "Subnet Mask:", 0, 32);
-            drawText(&display, font_8x8, std::to_string(config["SUBNET"][0]) + "." + std::to_string(config["SUBNET"][1]) + "." + std::to_string(config["SUBNET"][2]) + "." + std::to_string(config["SUBNET"][3]), 0, 40);
+            drawText(&display, font_8x8, subnet_str, 0, 40);
 
             if (!edit_mode) {
                 if (button_exit_pressed) {
@@ -361,16 +389,32 @@ int main () {
                     }
                 }
             } else { // edit mode enabled
+                uint8_t edit_selection = 0;
                 switch (current_selection) {
                     case 0: // IP
+                        while (true) {
+                            sleep_ms(3000);
+                            edit_selection = 1;
+                            edit_selection += 0;
+
+
+
+
+
+
+
+                            break;
+                        }
                         break;
                     case 1: // Subnet
+                        edit_selection = 1;
                         break;
-            }
+                }
             }
             draw_menu_selected(&display, current_selection);
             display.sendBuffer();
             break;
+        }
 
         case MENU_PAGE::PORTS:
             if (button_down_pressed) {
