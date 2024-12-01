@@ -47,7 +47,7 @@ enum PORT_STATUS {
     DISABLED
 };
 
-using ConfigTypes = std::variant<bool, uint8_t[4], unt16_t, PORT_STATUS>;
+using ConfigTypes = std::variant<bool, uint8_t[4], uint16_t, PORT_STATUS>;
 
 std::unordered_map<std::string, ConfigTypes> config = {
     {"IP", {2, 0, 0, 1}},
