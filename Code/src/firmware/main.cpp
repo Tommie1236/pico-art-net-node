@@ -47,11 +47,11 @@ enum PORT_STATUS {
     DISABLED
 };
 
-using ConfigTypes = std::variant<bool, std::string, uint16_t, PORT_STATUS>;
+using ConfigTypes = std::variant<bool, uint8t[4], uint16_t, PORT_STATUS>;
 
 std::unordered_map<std::string, ConfigTypes> config = {
-    {"IP", "002.000.000.001"},
-    {"SUBNET", "255.000.000.000"},
+    {"IP", {2, 0, 0, 1}},
+    {"SUBNET", {255, 0, 0, 0}},
     {"DHCP", true},
     {"PORT_A_STATUS", PORT_STATUS::OUTPUT},
     {"PORT_A_UNIVERSE", uint16_t(0x0000)},
@@ -322,7 +322,7 @@ int main () {
             drawRect(&display, 112, 16, 127, 31);
             drawRect(&display, 112, 32, 127, 47);
             if (std::get<bool>(config["DHCP"])) {   // dhcp enabled
-                drawText(&display, FONT, "v", 114, 15);
+                drawText(&display, FONT, "x", 114, 15);
             } else {    // dhcp disabled
                 drawText(&display, FONT, "x", 114, 31);
             }
@@ -335,9 +335,9 @@ int main () {
             display.clear();
             draw_menu_content(&display, "IP:", {}, false);
             drawText(&display, font_8x8, "IP Address:", 0, 16);
-            drawText(&display, font_8x8, std::get<std::string>(config["IP"]).c_str(), 0, 24);
+            drawText(&display, font_8x8, std::to_string(config["IP"][0]) + "." + std::to_string(config["IP"][1]) + "." + std::to_string(config["IP"][2]) + "." + std::to_string(config["IP"][3]), 0, 24);
             drawText(&display, font_8x8, "Subnet Mask:", 0, 32);
-            drawText(&display, font_8x8, std::get<std::string>(config["SUBNET"]).c_str(), 0, 40);
+            drawText(&display, font_8x8, std::to_string(config["SUBNET"][0]) + "." + std::to_string(config["SUBNET"][1]) + "." + std::to_string(config["SUBNET"][2]) + "." + std::to_string(config["SUBNET"][3]), 0, 40);
 
             if (!edit_mode) {
                 if (button_exit_pressed) {
@@ -481,13 +481,13 @@ int main () {
             drawRect(&display, 112, 48, 127, 63);
             switch (std::get<PORT_STATUS>(config["PORT_A_STATUS"])) {
                 case PORT_STATUS::OUTPUT:
-                    drawText(&display, FONT, "v", 114, 15);
+                    drawText(&display, FONT, "x", 114, 15);
                     break;
                 case PORT_STATUS::INPUT:
-                    drawText(&display, FONT, "v", 114, 31);
+                    drawText(&display, FONT, "x", 114, 31);
                     break;
                 case PORT_STATUS::DISABLED:
-                    drawText(&display, FONT, "v", 114, 47);
+                    drawText(&display, FONT, "x", 114, 47);
                     break;
             }
             draw_menu_selected(&display, current_selection);
@@ -605,13 +605,13 @@ int main () {
             drawRect(&display, 112, 48, 127, 63);
             switch(std::get<PORT_STATUS>(config["PORT_B_STATUS"])) {
                 case PORT_STATUS::OUTPUT:
-                    drawText(&display, FONT, "v", 114, 15);
+                    drawText(&display, FONT, "x", 114, 15);
                     break;
                 case PORT_STATUS::INPUT:
-                    drawText(&display, FONT, "v", 114, 31);
+                    drawText(&display, FONT, "x", 114, 31);
                     break;
                 case PORT_STATUS::DISABLED:
-                    drawText(&display, FONT, "v", 114, 47);
+                    drawText(&display, FONT, "x", 114, 47);
                     break;
             }
             draw_menu_selected(&display, current_selection);
