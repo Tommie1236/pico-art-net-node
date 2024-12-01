@@ -73,19 +73,18 @@ std::unordered_map<std::string, ConfigTypes> config = {
 // MAIN 
 //  - Network
 //      - ip
-//          view current ip
-//          - dhcp
-//              enable
-//              - static
-//                  set ip
-//                  set subnet
+//          ip: 002.000.000.001
+//          sn: 255.000.000.000
+//      - dhcp
+//          enable  [ ]
+//          disable [x]
 //  - Ports
 //      - A
 //      - B
 //          - status
-//              disable
+//              output
 //              input             // may support later
-//              ouput  
+//              disabled  
 //          - universe
 //              net
 //              subnet
