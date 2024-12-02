@@ -230,7 +230,9 @@ int main () {
     bool edit_mode = false;
 
     bool config_changed = false;
-    
+    if (config_changed) {
+        // remove if implemented
+    }
     while (true) {
     // Invert pin values because they are active low.
     // TODO: implement debouncing
@@ -476,7 +478,6 @@ case MENU_PAGE::MAIN: if (button_down_pressed) {
                         }
                         break;
                     case 1: // Subnet
-                        edit_selection = 1;
                         break;
                 }
             }
@@ -606,41 +607,96 @@ case MENU_PAGE::MAIN: if (button_down_pressed) {
             display.sendBuffer();
             break;
 
-        case MENU_PAGE::A_UNIVERSE:
-            if (button_down_pressed) {
-                if (current_selection < 2) {
-                    current_selection++;
-                } else {
+        case MENU_PAGE::A_UNIVERSE: {
+            //net
+            //subnet
+            //universe
+
+            uint16_t universe = std::get<uint16_t>(config["PORT_A_UNIVERSE"]);
+
+            char net_str[4]; // max 3 digits
+            char subnet_str[3]; // max 2 digits
+            char universe_str[3]; // max 2 digits
+
+            sprintf(net_str, "%03d", universe >> 16);
+            sprintf(subnet_str, "%02d", (universe >> 8) & 0xF);
+            sprintf(universe_str, "%02d", universe & 0xF);
+
+            display.clear();
+            draw_menu_content(&display, "Universe A:", {"Net", "Subnet", "Universe"}, false);
+
+            drawText(&display, FONT, net_str, 92, 16);
+            drawText(&display, FONT, subnet_str, 104, 32);
+            drawText(&display, FONT, universe_str, 104, 48);
+            
+            if (!edit_mode) {
+                if (button_exit_pressed) {
+                    current_page = MENU_PAGE::A;
                     current_selection = 0;
+                    printf("enter menu A\n");
+                    break;
+                } else if (button_menu_pressed) {
+                    edit_mode = true;
+                } else if (button_down_pressed) {
+                    if (current_selection < 2) {
+                        current_selection++;
+                    } else {
+                        current_selection = 0;
+                    }
+                } else if (button_up_pressed) {
+                    if (current_selection > 0) {
+                        current_selection--;
+                    } else {
+                        current_selection = 2;
+                    }
                 }
-            } else if (button_up_pressed) {
-                if (current_selection > 0) {
-                    current_selection--;
-                } else {
-                    current_selection = 2;
-                }
-            } else if (button_menu_pressed) {
+            draw_menu_selected(&display, current_selection);
+            } else {
                 switch (current_selection) {
-                    case 0:
-                        // set net
+
+                    case 0: // net
+                        fillRect(&display, 92, 16, 127, 31, WriteMode::INVERT);
+                        if (button_down_pressed) {
+                            universe -= 0x1000;
+                        } else if (button_up_pressed) {
+                            universe += 0x1000;
+                        } else if (button_menu_pressed | button_exit_pressed) {
+                            edit_mode = false;
+                            config["PORT_A_UNIVERSE"] = universe;
+                            config_changed = true;
+                        }
                         break;
-                    case 1:
-                        // set subnet
+                    case 1: // subnet
+                        fillRect(&display, 104, 32, 127, 47, WriteMode::INVERT);
+                        if (button_down_pressed) {
+                            universe -= 0x10;
+                        } else if (button_up_pressed) {
+                            universe += 0x10;
+                        } else if (button_menu_pressed | button_exit_pressed) {
+                            edit_mode = false;
+                            config["PORT_A_UNIVERSE"] = universe;
+                            config_changed = true;
+                        }
                         break;
-                    case 2:
-                        // set universe
+                    case 2: // universe
+                        fillRect(&display, 104, 48, 127, 63, WriteMode::INVERT);
+                        if (button_down_pressed) {
+                            universe--;
+                        } else if (button_up_pressed) {
+                            universe++;
+                        } else if (button_menu_pressed | button_exit_pressed) {
+                            edit_mode = false;
+                            config["PORT_A_UNIVERSE"] = universe;
+                            config_changed = true;
+                        }
                         break;
                 }
-            } else if (button_exit_pressed) {
-                current_page = MENU_PAGE::A;
-                current_selection = 0;
-                printf("enter menu A\n");
-                break;
             }
-            // TODO: cast universe to uint16_t when changing
-            // TODO: add a way to set the net/subnet/universe. default menu is temporary.
-            draw_menu(&display, "Universe A:", {"Net", "Subnet", "Universe"}, current_selection);
+
+            display.sendBuffer();
+
             break;
+        }
 
         case MENU_PAGE::B:
             if (button_down_pressed) {
