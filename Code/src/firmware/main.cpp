@@ -399,8 +399,6 @@ case MENU_PAGE::MAIN: if (button_down_pressed) {
             draw_menu_selected(&display, current_selection);
             } else { // edit mode enabled
                 uint8_t edit_selection = 0;
-                switch (current_selection) {
-                    case 0: // IP
                         while (edit_mode) {
                             button_menu_pressed = !gpio_get(MENU_BUTTON_PIN);
                             button_exit_pressed = !gpio_get(EXIT_BUTTON_PIN);
@@ -476,10 +474,6 @@ case MENU_PAGE::MAIN: if (button_down_pressed) {
                                 }
                             }
                         }
-                        break;
-                    case 1: // Subnet
-                        break;
-                }
             }
             display.sendBuffer();
             break;
