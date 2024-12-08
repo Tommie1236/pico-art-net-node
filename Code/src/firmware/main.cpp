@@ -185,24 +185,28 @@ void main_core_1 () {
     // handle artnet connection and send the dmx data to the pio's
     // input isn't supported yet. only output.
     DmxOutput dmx_out = DmxOutput();
-    uint8_t universe[UNIVERSE_LENGTH + 1];
+    uint8_t universe[UNIVERSE_LENGTH + 1] = {0};
 
     gpio_put(PORT_A_DIR_PIN, 1);
 
-    universe[2] = 255;
-    universe[3] = 255;
-    universe[5] = 255;
+    universe[0] = 0;
+    universe[1] = 0;    // red
+    universe[2] = 255;  // green
+    universe[3] = 255;  // blue
+    universe[4] = 0;  // white
+    universe[5] = 255;  // dimmer
 
     dmx_out.begin(PORT_A_TX_PIN);
 
     while (true) {
-        dmx_out.write(universe, 4);
+        dmx_out.write(universe, UNIVERSE_LENGTH + 1);
         while (dmx_out.busy()) {
         }
     }
 }
 
 int main () {
+    uint16_t universe;
     // Handle user interaction: display/buttons. and the settings.
 
     stdio_init_all();
@@ -605,15 +609,16 @@ case MENU_PAGE::MAIN: if (button_down_pressed) {
             //net
             //subnet
             //universe
-
-            uint16_t universe = std::get<uint16_t>(config["PORT_A_UNIVERSE"]);
+            if (!edit_mode) {
+                universe = std::get<uint16_t>(config["PORT_A_UNIVERSE"]);
+            }
 
             char net_str[4]; // max 3 digits
             char subnet_str[3]; // max 2 digits
             char universe_str[3]; // max 2 digits
 
-            sprintf(net_str, "%03d", universe >> 16);
-            sprintf(subnet_str, "%02d", (universe >> 8) & 0xF);
+            sprintf(net_str, "%03d", (universe >> 8) & 0x7F);
+            sprintf(subnet_str, "%02d", (universe >> 4) & 0xF);
             sprintf(universe_str, "%02d", universe & 0xF);
 
             display.clear();
@@ -645,20 +650,17 @@ case MENU_PAGE::MAIN: if (button_down_pressed) {
                     }
                 }
             draw_menu_selected(&display, current_selection);
-            } else {
+            } else if (edit_mode) {
                 switch (current_selection) {
 
                     case 0: // net
                         fillRect(&display, 92, 16, 127, 31, WriteMode::INVERT);
                         if (button_down_pressed) {
-                            universe -= 0x1000;
+                            universe -= 0x100;
                         } else if (button_up_pressed) {
                             universe += 0x1000;
-                        } else if (button_menu_pressed | button_exit_pressed) {
-                            edit_mode = false;
-                            config["PORT_A_UNIVERSE"] = universe;
-                            config_changed = true;
                         }
+                        
                         break;
                     case 1: // subnet
                         fillRect(&display, 104, 32, 127, 47, WriteMode::INVERT);
@@ -666,11 +668,7 @@ case MENU_PAGE::MAIN: if (button_down_pressed) {
                             universe -= 0x10;
                         } else if (button_up_pressed) {
                             universe += 0x10;
-                        } else if (button_menu_pressed | button_exit_pressed) {
-                            edit_mode = false;
-                            config["PORT_A_UNIVERSE"] = universe;
-                            config_changed = true;
-                        }
+                        } 
                         break;
                     case 2: // universe
                         fillRect(&display, 104, 48, 127, 63, WriteMode::INVERT);
@@ -678,12 +676,14 @@ case MENU_PAGE::MAIN: if (button_down_pressed) {
                             universe--;
                         } else if (button_up_pressed) {
                             universe++;
-                        } else if (button_menu_pressed | button_exit_pressed) {
-                            edit_mode = false;
-                            config["PORT_A_UNIVERSE"] = universe;
-                            config_changed = true;
-                        }
+                        } 
                         break;
+                }
+                if (button_menu_pressed | button_exit_pressed) {
+                    edit_mode = false;
+                    config["PORT_A_UNIVERSE"] = universe;
+                    printf("universe: %04x\n", universe);
+                    config_changed = true;
                 }
             }
 
@@ -780,39 +780,92 @@ case MENU_PAGE::MAIN: if (button_down_pressed) {
             display.sendBuffer();
             break;
 
-        case MENU_PAGE::B_UNIVERSE:
-            if (button_down_pressed) {
-                if (current_selection < 2) {
-                    current_selection++;
-                } else {
-                    current_selection = 0;
-                }
-            } else if (button_up_pressed) {
-                if (current_selection > 0) {
-                    current_selection--;
-                } else {
-                    current_selection = 2;
-                }
-            } else if (button_menu_pressed) {
-                switch (current_selection) {
-                    case 0:
-                        // set net
-                        break;
-                    case 1:
-                        // set subnet
-                        break;
-                    case 2:
-                        // set universe
-                        break;
-                }
-            } else if (button_exit_pressed) {
-                current_page = MENU_PAGE::B;
-                current_selection = 0;
-                printf("enter menu B\n");
-                break;
+        case MENU_PAGE::B_UNIVERSE: {
+            //net
+            //subnet
+            //universe
+            if (!edit_mode) {
+                universe = std::get<uint16_t>(config["PORT_B_UNIVERSE"]);
             }
-            // TODO: cast universe to uint16_t when changing
+
+            char net_str[4]; // max 3 digits
+            char subnet_str[3]; // max 2 digits
+            char universe_str[3]; // max 2 digits
+
+            sprintf(net_str, "%03d", (universe >> 8) & 0x7F);
+            sprintf(subnet_str, "%02d", (universe >> 4) & 0xF);
+            sprintf(universe_str, "%02d", universe & 0xF);
+
+            display.clear();
+            draw_menu_content(&display, "Universe B:", {"Net", "Subnet", "Universe"}, false);
+
+            drawText(&display, FONT, net_str, 92, 16);
+            drawText(&display, FONT, subnet_str, 104, 32);
+            drawText(&display, FONT, universe_str, 104, 48);
+            
+            if (!edit_mode) {
+                if (button_exit_pressed) {
+                    current_page = MENU_PAGE::B;
+                    current_selection = 0;
+                    printf("enter menu B\n");
+                    break;
+                } else if (button_menu_pressed) {
+                    edit_mode = true;
+                } else if (button_down_pressed) {
+                    if (current_selection < 2) {
+                        current_selection++;
+                    } else {
+                        current_selection = 0;
+                    }
+                } else if (button_up_pressed) {
+                    if (current_selection > 0) {
+                        current_selection--;
+                    } else {
+                        current_selection = 2;
+                    }
+                }
+            draw_menu_selected(&display, current_selection);
+            } else if (edit_mode) {
+                switch (current_selection) {
+
+                    case 0: // net
+                        fillRect(&display, 92, 16, 127, 31, WriteMode::INVERT);
+                        if (button_down_pressed) {
+                            universe -= 0x100;
+                        } else if (button_up_pressed) {
+                            universe += 0x1000;
+                        }
+                        
+                        break;
+                    case 1: // subnet
+                        fillRect(&display, 104, 32, 127, 47, WriteMode::INVERT);
+                        if (button_down_pressed) {
+                            universe -= 0x10;
+                        } else if (button_up_pressed) {
+                            universe += 0x10;
+                        } 
+                        break;
+                    case 2: // universe
+                        fillRect(&display, 104, 48, 127, 63, WriteMode::INVERT);
+                        if (button_down_pressed) {
+                            universe--;
+                        } else if (button_up_pressed) {
+                            universe++;
+                        } 
+                        break;
+                }
+                if (button_menu_pressed | button_exit_pressed) {
+                    edit_mode = false;
+                    config["PORT_B_UNIVERSE"] = universe;
+                    printf("universe: %04x\n", universe);
+                    config_changed = true;
+                }
+            }
+
+            display.sendBuffer();
+
             break;
+        }
 
         case MENU_PAGE::STATUS:
             if (button_exit_pressed) {
