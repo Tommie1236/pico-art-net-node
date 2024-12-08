@@ -206,7 +206,7 @@ void main_core_1 () {
 }
 
 int main () {
-    uint16_t universe;
+    uint16_t universe = 0x0000;
     // Handle user interaction: display/buttons. and the settings.
 
     stdio_init_all();
@@ -681,8 +681,7 @@ case MENU_PAGE::MAIN: if (button_down_pressed) {
                 }
                 if (button_menu_pressed | button_exit_pressed) {
                     edit_mode = false;
-                    config["PORT_A_UNIVERSE"] = universe;
-                    printf("universe: %04x\n", universe);
+                    config["PORT_A_UNIVERSE"] = static_cast<uint16_t>(universe & 0x7FFF);
                     config_changed = true;
                 }
             }
@@ -856,8 +855,7 @@ case MENU_PAGE::MAIN: if (button_down_pressed) {
                 }
                 if (button_menu_pressed | button_exit_pressed) {
                     edit_mode = false;
-                    config["PORT_B_UNIVERSE"] = universe;
-                    printf("universe: %04x\n", universe);
+                    config["PORT_B_UNIVERSE"] = static_cast<uint16_t>(universe & 0x7FFF);
                     config_changed = true;
                 }
             }
