@@ -358,7 +358,6 @@ case MENU_PAGE::MAIN: if (button_down_pressed) {
             }
             draw_menu_selected(&display, current_selection);
             display.sendBuffer();
-            // TODO: add box/tick to selected option
             break;
 
         case MENU_PAGE::IP: {
