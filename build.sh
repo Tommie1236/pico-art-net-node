@@ -2,6 +2,7 @@
 
 set -e    # Exit on error
 
+touch Code/src/firmware/main.cpp # touch file to always print linker memory usage
 git submodule update --init
 cd Code/lib/Pico-DMX
 git submodule update --init
