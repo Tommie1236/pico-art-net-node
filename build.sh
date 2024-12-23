@@ -3,13 +3,15 @@
 set -e    # Exit on error
 
 touch Code/src/firmware/main.cpp # touch file to always print linker memory usage
+
 git submodule update --init
 cd Code/lib/Pico-DMX
 git submodule update --init
 cd ../pico-sdk/
-git submodule update --init 
 export PICO_SDK_PATH=$PWD
+git submodule update --init 
 cd ../..
+
 mkdir -p build
 cp ./lib/pico-sdk/external/pico_sdk_import.cmake .
 cd build
