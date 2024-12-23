@@ -10,6 +10,10 @@ git submodule update --init
 cd ../pico-sdk/
 export PICO_SDK_PATH=$PWD
 git submodule update --init 
+cd ../ArtNet
+git submodule update --init
+cd ../Ethernet
+git submodule update --init
 cd ../..
 
 mkdir -p build

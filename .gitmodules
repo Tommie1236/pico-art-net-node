@@ -7,3 +7,9 @@
 [submodule "Code/lib/pico-ssd1306"]
 	path = Code/lib/pico-ssd1306
 	url = https://github.com/Harbys/pico-ssd1306
+[submodule "Code/lib/ArtNet"]
+	path = Code/lib/ArtNet
+	url = https://github.com/Tommie1236/ArtNet
+[submodule "Code/lib/Ethernet"]
+	path = Code/lib/Ethernet
+	url = https://github.com/Tommie1236/Ethernet
