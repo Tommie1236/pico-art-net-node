@@ -3,16 +3,6 @@ build/**
 Code/build/*
 
 
-**/include/**
-**/lib/**
-**/bin/**
-**/lib64
-**/pyvenv.cfg
-
-
-
-
-
 
 
 # Prerequisites
