@@ -22,6 +22,7 @@ target_link_libraries(firmware PRIVATE
 
     picodmx
     pico_ssd1306
+    # Ethernet # TODO: Uncomment when finished porting
 )
 
 # enable usb/uart stdout
