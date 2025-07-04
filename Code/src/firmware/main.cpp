@@ -24,7 +24,7 @@
 
 using namespace pico_ssd1306;
 
-#define FONT font_12x16 // TODO: change to smaller font. (create?)
+#define FONT font_12x16 
 
 enum MENU_PAGE {
     MAIN,
@@ -85,7 +85,7 @@ std::unordered_map<std::string, ConfigTypes> config = {
 //      - B
 //          - status
 //              output
-//              input             // may support later
+//              input
 //              disabled  
 //          - universe
 //              net
@@ -264,7 +264,7 @@ int main () {
 
         // TODO: refactor the whole menu system. it's still in development but a mess rn.
         // - move the display "printing" to the top of the case.
-        // - reorder the button checks to the order: exit, menu, down, up.
+        // - reorder the button checks to the order: exit, menu, up, down.
         // TODO: switch all menu changes to the menu_switch function.
         // if possible move the debug print to the menu_switch function.
         switch (current_page) {
@@ -395,6 +395,7 @@ int main () {
                 drawText(&display, font_8x8, "Subnet Mask:", 0, 32);
                 drawText(&display, font_8x8, subnet_str, 0, 40);
 
+                // TODO: Disable editing if dhcp enabled 
                 if (!edit_mode) {
                     if (button_exit_pressed) {
                         current_page = MENU_PAGE::NETWORK;
@@ -907,5 +908,4 @@ int main () {
 
         }
     }
-
 };
