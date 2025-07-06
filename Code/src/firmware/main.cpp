@@ -13,6 +13,7 @@
 #include "pico/stdlib.h"
 #include "pico/time.h"
 #include "pico/multicore.h"
+#include "pico/unique_id.h"
 
 #include "main.h"
 
@@ -252,13 +253,20 @@ void init_w5500(void) {
     wizchip_init(tx_rx_mem[0], tx_rx_mem[1]);
 
     wiz_NetInfo netinfo = {
-        .mac = {0xb8, 0x27, 0xeb, 0xab, 0xcd, 0xef},
         .ip = {192, 168, 2, 80},
         .sn = {255, 255, 255, 0},
         .gw = {192, 168, 2, 254},
         .dns = {1, 1, 1, 1},
         .dhcp = NETINFO_STATIC
     };
+
+    // set mac from flash serial to always be unique
+    pico_unique_board_id_t id;
+    pico_get_unique_board_id(&id);
+
+    memcpy(netinfo.mac, id.id, 6);
+    netinfo.mac[0] = (netinfo.mac[0] & 0xfe ) | 0x02;
+
     wizchip_setnetinfo(&netinfo);
 
 }
@@ -270,7 +278,6 @@ void main_core_1 () {
     // handle artnet connection and send the dmx data to the pio's
     // input isn't supported yet. only output.
     DmxOutput dmx_out = DmxOutput();
-    //uint8_t universe[UNIVERSE_LENGTH + 1] = {0};
 
     // set port A to output for now
     gpio_put(PORT_A_DIR_PIN, 1);
@@ -320,13 +327,10 @@ int main () {
     init_oled();
     init_w5500();
 
-    
-
 
     SSD1306 display = SSD1306(i2c0, 0x3c, Size::W128xH64);
     display.setOrientation(0);
     display.clear();
-
     
     multicore_launch_core1(&main_core_1);
 
