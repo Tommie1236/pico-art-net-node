@@ -20,11 +20,12 @@ target_link_libraries(firmware PRIVATE
     hardware_adc
     hardware_i2c
 
+    ioLibrary
     picodmx
     pico_ssd1306
 )
 
-# enable usb/uart stdout
+# enable usb/uart stdio
 pico_enable_stdio_usb(firmware 1)
 pico_enable_stdio_uart(firmware 0) 
 
@@ -46,6 +47,8 @@ target_compile_options(firmware PRIVATE
     -funroll-loops 
     -Werror 
     -Wall
+    -Wno-unused-function
+    -Wno-error=unused-function
 )
 
 # preprocessor macros

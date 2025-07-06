@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <string>
 #include <vector>
@@ -8,11 +9,17 @@
 
 #include "hardware/gpio.h"
 #include "hardware/i2c.h"
+#include "hardware/spi.h"
 #include "pico/stdlib.h"
 #include "pico/time.h"
 #include "pico/multicore.h"
 
 #include "main.h"
+
+#define _WIZCHIP_ W5500
+#include "W5500/w5500.h"
+#include "wizchip_conf.h"
+#include "socket.h"
 
 #include <DmxOutput.h>
 //#include <DmxInput.h>
@@ -40,7 +47,7 @@ enum MENU_PAGE {
     B_STATUS,
     B_UNIVERSE,
     STATUS,
-    LOCK            // Lock/unlock the menu by holding the menu button for 3 seconds.
+    LOCK            // TODO: Lock/unlock the menu by holding the menu button for 3 seconds.
 };
 
 enum PORT_STATUS {
@@ -136,6 +143,8 @@ void init_gpio() {
     gpio_pull_up(EXIT_BUTTON_PIN);
     gpio_pull_up(ETH_INT_PIN);     // how add interrupt? change when adding ethernet 
 
+    gpio_put(PORT_A_LED_PIN, 1);
+    gpio_put(PORT_B_LED_PIN, 1);
     // set to highest power. seems to not work with less
     gpio_set_drive_strength(PORT_A_LED_PIN, GPIO_DRIVE_STRENGTH_12MA);
     gpio_set_drive_strength(PORT_B_LED_PIN, GPIO_DRIVE_STRENGTH_12MA);
@@ -195,30 +204,110 @@ void switch_menu(
     current_selection = 0;
 }
 
+
+uint8_t wizchip_spi_read(void) {
+    uint8_t data;
+    spi_read_blocking(ETH_SPI, 0xff, &data, 1);
+    return data;
+}
+
+void wizchip_spi_write(uint8_t data) {
+    spi_write_blocking(ETH_SPI, &data, 1);
+}
+
+void wizchip_cs_select(void) {
+    gpio_put(ETH_CS_PIN, 0);
+}
+
+void wizchip_cs_deselect(void) {
+    gpio_put(ETH_CS_PIN, 1);
+}
+
+
+void init_w5500(void) {
+    // TODO: check for duplicate pin inits, this is just for a test
+
+    gpio_init(ETH_RST_PIN);
+    gpio_set_dir(ETH_RST_PIN, GPIO_OUT);
+    gpio_put(ETH_RST_PIN, 0);
+    sleep_ms(10);
+    gpio_put(ETH_RST_PIN, 1);
+    sleep_ms(50);
+
+    spi_init(ETH_SPI, 10 * 1000 * 1000); // 10MHz
+    spi_set_format(ETH_SPI, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
+    gpio_set_function(ETH_SCK_PIN, GPIO_FUNC_SPI);
+    gpio_set_function(ETH_MOSI_PIN, GPIO_FUNC_SPI);
+    gpio_set_function(ETH_MISO_PIN, GPIO_FUNC_SPI);
+
+    gpio_init(ETH_CS_PIN);
+    gpio_set_dir(ETH_CS_PIN, GPIO_OUT);
+    gpio_put(ETH_CS_PIN, 1);
+
+    reg_wizchip_spi_cbfunc(wizchip_spi_read, wizchip_spi_write);
+    reg_wizchip_cs_cbfunc(wizchip_cs_select, wizchip_cs_deselect);
+
+    uint8_t tx_rx_mem[2][8] = { {2,2,2,2,2,2,2,2}, {2,2,2,2,2,2,2,2}};
+    
+    wizchip_init(tx_rx_mem[0], tx_rx_mem[1]);
+
+    wiz_NetInfo netinfo = {
+        .mac = {0xb8, 0x27, 0xeb, 0xab, 0xcd, 0xef},
+        .ip = {192, 168, 2, 80},
+        .sn = {255, 255, 255, 0},
+        .gw = {192, 168, 2, 254},
+        .dns = {1, 1, 1, 1},
+        .dhcp = NETINFO_STATIC
+    };
+    wizchip_setnetinfo(&netinfo);
+
+}
+
+
+
 void main_core_1 () {
     // TODO:
     // handle artnet connection and send the dmx data to the pio's
     // input isn't supported yet. only output.
     DmxOutput dmx_out = DmxOutput();
-    uint8_t universe[UNIVERSE_LENGTH + 1] = {0};
+    //uint8_t universe[UNIVERSE_LENGTH + 1] = {0};
 
     // set port A to output for now
     gpio_put(PORT_A_DIR_PIN, 1);
 
-    universe[0] = 0;
-    universe[1] = 0;    // red
-    universe[2] = 255;  // green
-    universe[3] = 255;  // blue
-    universe[4] = 0;  // white
-    universe[5] = 255;  // dimmer
-
     dmx_out.begin(PORT_A_TX_PIN);
+
+    socket(0, Sn_MR_UDP, 6454, 0);
+    printf("socket connected\n");
+
+
+    uint8_t buf[600];
 
     while (true) {
 
-        dmx_out.write(universe, UNIVERSE_LENGTH + 1);
+        int32_t len = recvfrom(0, buf, sizeof(buf), NULL, NULL);
 
-        while (dmx_out.busy());
+        if (len > 0 && len >= 18 && memcmp(buf, "Art-Net\0", 8) == 0) {
+            uint16_t opcode = buf[8] | (buf[9] << 8);
+
+            if (opcode == 0x5000) {
+                //uint16_t length = (buf[16] << 8) | buf[17];
+                //uint16_t universe = buf[14] | (buf[15] << 8);
+
+                static uint8_t dmx_frame[513];
+                dmx_frame[0] = 0;
+                memcpy(dmx_frame + 1, buf + 18, 512);
+
+                gpio_put(PORT_A_LED_PIN, 0);
+                dmx_out.write(dmx_frame, 513);
+                while (dmx_out.busy());
+                gpio_put(PORT_A_LED_PIN, 1);
+            }
+        }
+
+
+
+
     }
 }
 
@@ -229,16 +318,17 @@ int main () {
     stdio_init_all();
     init_gpio();
     init_oled();
+    init_w5500();
+
     
-    gpio_put(PORT_A_LED_PIN, 1);
 
 
     SSD1306 display = SSD1306(i2c0, 0x3c, Size::W128xH64);
     display.setOrientation(0);
     display.clear();
+
     
-    
-    multicore_launch_core1(main_core_1);
+    multicore_launch_core1(&main_core_1);
 
     // ---------
 

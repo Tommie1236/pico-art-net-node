@@ -70,6 +70,7 @@
 #define ETH_SCK_PIN     26
 #define ETH_INT_PIN     15
 #define ETH_RST_PIN     14
+#define ETH_SPI         spi1
 
 
 
