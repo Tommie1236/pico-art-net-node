@@ -18,7 +18,7 @@ make -j $(($(nproc) * 2))
 while getopts 'l' flag; do
   case "${flag}" in (l) 
       echo "Loading firmware <$(pwd)/src/firmware/firmware.bin> to RP2040"
-      sudo picotool load $(pwd)/src/firmware/firmware.bin -f
+      sudo picotool load $(pwd)/src/firmware/firmware.bin -f --update
       ;;
   esac
 done
