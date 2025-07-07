@@ -38,16 +38,16 @@
 
 // DMX Ports
 #define PORT_A_ENABLE   1
-#define PORT_A_TX_PIN   3
-#define PORT_A_RX_PIN   0
-#define PORT_A_DIR_PIN  1
-#define PORT_A_LED_PIN  2
+#define PORT_A_TX_PIN   7
+#define PORT_A_RX_PIN   4
+#define PORT_A_DIR_PIN  5
+#define PORT_A_LED_PIN  6
 
 #define PORT_B_ENABLE   1
-#define PORT_B_TX_PIN   7
-#define PORT_B_RX_PIN   4
-#define PORT_B_DIR_PIN  5
-#define PORT_B_LED_PIN  6
+#define PORT_B_TX_PIN   3
+#define PORT_B_RX_PIN   0
+#define PORT_B_DIR_PIN  1
+#define PORT_B_LED_PIN  2
 
 // Display
 #define DISPLAY_WIDTH   128

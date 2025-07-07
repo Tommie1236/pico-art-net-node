@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "pico-artnet-node")(type "KiCad")(uri "${KIPRJMOD}/pico-artnet-node.kicad_sym")(options "")(descr ""))
+)
