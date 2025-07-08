@@ -9,12 +9,12 @@
 //               ┏━━━┫     ┣━━━┓          
 //            5V ┃◎  ┗━━━━━┛  ◎┃ GP0 PORT_A_RX    
 //           Gnd ┃■           ◎┃ GP1 PORT_A_DIR    
-//           3V3 ┃◎           ◎┃ GP2 PORT_A_LED    
-// ETH_CS   GP29 ┃◎           ◎┃ GP3 PORT_A_TX    
+//           3V3 ┃◎           ◎┃ GP2 PORT_A_TX 
+// ETH_CS   GP29 ┃◎           ◎┃ GP3 PORT_A_LED        
 // ETH_MOSI GP28 ┃◎           ◎┃ GP4 PORT_B_RX    
 // ETH_MISO GP27 ┃◎     □     ◎┃ GP5 PORT_B_DIR    
-// ETH_SCK  GP26 ┃◎     ┗GP16 ◎┃ GP6 PORT_B_LED    
-// ETH_INT  GP15 ┃◎           ◎┃ GP7 PORT_B_TX    
+// ETH_SCK  GP26 ┃◎     ┗GP16 ◎┃ GP6 PORT_B_TX 
+// ETH_INT  GP15 ┃◎           ◎┃ GP7 PORT_B_LED
 // ETH_RST  GP14 ┃◎ ◎ ◎ ◎ ◎ ◎ ◎┃ GP8 DISPLAY_SDA    
 //               ┗━━━━━━━━━━━━━┛
 //                  ┃ ┃ ┃ ┃ ┗ GP9    DISPLAY_SCL    

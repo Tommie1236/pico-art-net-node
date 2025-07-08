@@ -1699,142 +1699,6 @@
 				)
 			)
 		)
-		(symbol "Regulator_Linear:LM1117DT-3.3"
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "U"
-				(at -3.81 3.175 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" "LM1117DT-3.3"
-				(at 0 3.175 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left)
-				)
-			)
-			(property "Footprint" "Package_TO_SOT_SMD:TO-252-3_TabPin2"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "http://www.ti.com/lit/ds/symlink/lm1117.pdf"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Description" "800mA Low-Dropout Linear Regulator, 3.3V fixed output, TO-252"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "linear regulator ldo fixed positive"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "TO?252*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "LM1117DT-3.3_0_1"
-				(rectangle
-					(start -5.08 -5.08)
-					(end 5.08 1.905)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-			)
-			(symbol "LM1117DT-3.3_1_1"
-				(pin power_in line
-					(at 0 -7.62 90)
-					(length 2.54)
-					(name "GND"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin power_out line
-					(at 7.62 0 180)
-					(length 2.54)
-					(name "VO"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at -7.62 0 0)
-					(length 2.54)
-					(name "VI"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-		)
 		(symbol "Switch:SW_SPST"
 			(pin_names
 				(offset 0) hide)
@@ -3112,12 +2976,6 @@
 		(uuid "53ec7b18-571e-4a00-a901-99b1b878aa6c")
 	)
 	(junction
-		(at 109.22 36.83)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "71ee47e9-2fa3-4e42-a439-c461012dfae6")
-	)
-	(junction
 		(at 39.37 31.75)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -3134,18 +2992,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "8b82a1ae-90ac-4603-ac9a-8ad53eec7029")
-	)
-	(junction
-		(at 129.54 36.83)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "a41b9d2e-d4fe-41be-a68f-28abd869960a")
-	)
-	(junction
-		(at 119.38 46.99)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "dabf11a0-9862-4a2b-ba60-764241949986")
 	)
 	(junction
 		(at 240.03 74.93)
@@ -3184,16 +3030,6 @@
 			(type default)
 		)
 		(uuid "0876a9c5-8b56-45fa-be59-650c4643ab27")
-	)
-	(wire
-		(pts
-			(xy 109.22 35.56) (xy 109.22 36.83)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "0b30d6af-03a1-430d-bdbb-7d67969446ad")
 	)
 	(wire
 		(pts
@@ -3294,16 +3130,6 @@
 			(type default)
 		)
 		(uuid "1e0e8a7d-f8f5-4929-9f99-531a10922387")
-	)
-	(wire
-		(pts
-			(xy 109.22 36.83) (xy 111.76 36.83)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1e67f9f3-5b67-4205-b388-4111721366f9")
 	)
 	(wire
 		(pts
@@ -3417,16 +3243,6 @@
 	)
 	(wire
 		(pts
-			(xy 127 36.83) (xy 129.54 36.83)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "2de4cbe6-80fa-46f5-93b7-29cb7e533ad4")
-	)
-	(wire
-		(pts
 			(xy 240.03 33.02) (xy 237.49 33.02)
 		)
 		(stroke
@@ -3434,16 +3250,6 @@
 			(type default)
 		)
 		(uuid "2e16d040-fa56-439a-a086-b416c95772eb")
-	)
-	(wire
-		(pts
-			(xy 129.54 46.99) (xy 119.38 46.99)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "321950ad-b82f-4f41-8e21-0507eba057c9")
 	)
 	(wire
 		(pts
@@ -3617,16 +3423,6 @@
 	)
 	(wire
 		(pts
-			(xy 119.38 46.99) (xy 109.22 46.99)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4fc79a74-fa99-42cc-a58d-32f616a608fe")
-	)
-	(wire
-		(pts
 			(xy 139.7 176.53) (xy 143.51 176.53)
 		)
 		(stroke
@@ -3647,7 +3443,7 @@
 	)
 	(wire
 		(pts
-			(xy 129.54 35.56) (xy 129.54 36.83)
+			(xy 129.54 35.56) (xy 129.54 38.1)
 		)
 		(stroke
 			(width 0)
@@ -3657,7 +3453,7 @@
 	)
 	(wire
 		(pts
-			(xy 109.22 36.83) (xy 109.22 38.1)
+			(xy 109.22 35.56) (xy 109.22 38.1)
 		)
 		(stroke
 			(width 0)
@@ -3694,16 +3490,6 @@
 			(type default)
 		)
 		(uuid "5b5ff717-9843-4182-a930-e8f2adeeb8a8")
-	)
-	(wire
-		(pts
-			(xy 129.54 36.83) (xy 129.54 38.1)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "5b88f1c9-b845-4322-a81b-ad25265e078b")
 	)
 	(wire
 		(pts
@@ -3834,16 +3620,6 @@
 			(type default)
 		)
 		(uuid "742735bf-92ef-4b01-ae4e-5c2fc4a28b41")
-	)
-	(wire
-		(pts
-			(xy 119.38 46.99) (xy 119.38 48.26)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "75042288-08e9-48b8-a5f3-0c0ec533ea91")
 	)
 	(wire
 		(pts
@@ -4014,16 +3790,6 @@
 			(type default)
 		)
 		(uuid "91771f7b-9c0d-4301-8442-2794ce7e322a")
-	)
-	(wire
-		(pts
-			(xy 119.38 44.45) (xy 119.38 46.99)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "923d4022-df54-4afd-ad76-25f6cc75d3f2")
 	)
 	(wire
 		(pts
@@ -4765,7 +4531,7 @@
 	)
 	(global_label "PORT_B_TX"
 		(shape output)
-		(at 41.91 93.98 180)
+		(at 41.91 91.44 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4775,7 +4541,7 @@
 		)
 		(uuid "569db92d-f897-445d-b9b3-7fc5a4c24842")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 28.8858 93.98 0)
+			(at 28.8858 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4853,7 +4619,7 @@
 	)
 	(global_label "PORT_A_TX"
 		(shape output)
-		(at 41.91 104.14 180)
+		(at 41.91 101.6 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4863,7 +4629,7 @@
 		)
 		(uuid "602c4d2c-d6f2-4bdf-a2f6-2dd29dfad004")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 28.8858 104.14 0)
+			(at 28.8858 101.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4919,7 +4685,7 @@
 	)
 	(global_label "PORT_B_LED"
 		(shape output)
-		(at 41.91 91.44 180)
+		(at 41.91 93.98 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4929,7 +4695,7 @@
 		)
 		(uuid "8b6fe4a8-9b1b-4c6b-bf18-0d3592bfbbe6")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 27.6158 91.44 0)
+			(at 27.6158 93.98 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5227,7 +4993,7 @@
 	)
 	(global_label "PORT_A_LED"
 		(shape output)
-		(at 41.91 101.6 180)
+		(at 41.91 104.14 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5237,7 +5003,7 @@
 		)
 		(uuid "f4160558-7a45-458f-a057-85b1985ba615")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 27.6158 101.6 0)
+			(at 27.6158 104.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5396,6 +5162,72 @@
 			(project ""
 				(path "/7b0a91fa-c31e-43bb-b474-f9fdc8ba9323"
 					(reference "#PWR5")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 109.22 46.99 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "1a19652b-8d0c-4bf6-abf5-515fe7f2b9fe")
+		(property "Reference" "#PWR18"
+			(at 109.22 53.34 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 109.22 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 109.22 46.99 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 109.22 46.99 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 109.22 46.99 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "ab136fd2-a3f8-4cdb-8b24-82f21306282d")
+		)
+		(instances
+			(project "pico-artnet-node"
+				(path "/7b0a91fa-c31e-43bb-b474-f9fdc8ba9323"
+					(reference "#PWR18")
 					(unit 1)
 				)
 			)
@@ -5577,7 +5409,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
+		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical"
 			(at 238.252 71.12 90)
 			(effects
 				(font
@@ -6298,7 +6130,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
+		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical"
 			(at 238.252 29.21 90)
 			(effects
 				(font
@@ -6697,7 +6529,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
+		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical"
 			(at 231.14 123.698 90)
 			(effects
 				(font
@@ -7272,77 +7104,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Regulator_Linear:LM1117DT-3.3")
-		(at 119.38 36.83 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "88b4232f-4096-4ed1-9baf-3b26264be22e")
-		(property "Reference" "U4"
-			(at 119.38 30.48 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "LM1117DT-3.3"
-			(at 119.38 33.02 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Package_TO_SOT_THT:TO-220-3_Vertical"
-			(at 119.38 36.83 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "http://www.ti.com/lit/ds/symlink/lm1117.pdf"
-			(at 119.38 36.83 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "800mA Low-Dropout Linear Regulator, 3.3V fixed output, TO-252"
-			(at 119.38 36.83 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "3"
-			(uuid "6085e7a8-755d-4a24-963a-c3a8769159f6")
-		)
-		(pin "1"
-			(uuid "12d73246-b190-4cba-8e2d-a9bd2ff67722")
-		)
-		(pin "2"
-			(uuid "499d4bfc-6ba8-4eef-8218-797a3c8c76f9")
-		)
-		(instances
-			(project ""
-				(path "/7b0a91fa-c31e-43bb-b474-f9fdc8ba9323"
-					(reference "U4")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Mechanical:MountingHole_Pad")
 		(at 35.56 25.4 90)
 		(unit 1)
@@ -7507,72 +7268,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:GND")
-		(at 119.38 48.26 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "9cdfe5d3-813d-43a6-a09b-c2c776e9479b")
-		(property "Reference" "#PWR18"
-			(at 119.38 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 119.38 53.34 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 119.38 48.26 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 119.38 48.26 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 119.38 48.26 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "83befe69-0c7a-463b-b519-13d2c0054e38")
-		)
-		(instances
-			(project "pico-artnet-node"
-				(path "/7b0a91fa-c31e-43bb-b474-f9fdc8ba9323"
-					(reference "#PWR18")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:R")
 		(at 231.14 142.24 90)
 		(unit 1)
@@ -7597,7 +7292,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
+		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical"
 			(at 231.14 144.018 90)
 			(effects
 				(font
@@ -8638,6 +8333,72 @@
 			(project "pico-artnet-node"
 				(path "/7b0a91fa-c31e-43bb-b474-f9fdc8ba9323"
 					(reference "#PWR15")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 129.54 46.99 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "fd2a7b43-8289-48f6-9ac5-08fd7330a955")
+		(property "Reference" "#PWR21"
+			(at 129.54 53.34 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 129.54 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 129.54 46.99 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 129.54 46.99 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 129.54 46.99 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "5eac122f-9556-49a1-b5b0-417316da88cb")
+		)
+		(instances
+			(project "pico-artnet-node"
+				(path "/7b0a91fa-c31e-43bb-b474-f9fdc8ba9323"
+					(reference "#PWR21")
 					(unit 1)
 				)
 			)
