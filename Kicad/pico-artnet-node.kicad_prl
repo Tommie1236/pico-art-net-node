@@ -12,7 +12,7 @@
       "pads": 1.0,
       "tracks": 1.0,
       "vias": 1.0,
-      "zones": 0.6
+      "zones": 0.4000000059604645
     },
     "selection_filter": {
       "dimensions": true,
@@ -64,7 +64,7 @@
       39,
       40
     ],
-    "visible_layers": "ffc7fff_ffffffff",
+    "visible_layers": "ffcbfff_ffffffff",
     "zone_display_mode": 0
   },
   "git": {
@@ -81,7 +81,19 @@
     "files": [
       {
         "name": "pico-artnet-node.kicad_pcb",
-        "open": true,
+        "open": false,
+        "window": {
+          "display": 0,
+          "maximized": true,
+          "pos_x": 0,
+          "pos_y": 0,
+          "size_x": 1280,
+          "size_y": 720
+        }
+      },
+      {
+        "name": "pico-artnet-node.kicad_sch",
+        "open": false,
         "window": {
           "display": 0,
           "maximized": true,
