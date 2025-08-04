@@ -4842,7 +4842,7 @@
 	)
 	(global_label "ETH_MOSI"
 		(shape output)
-		(at 76.2 106.68 0)
+		(at 76.2 104.14 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4852,7 +4852,7 @@
 		)
 		(uuid "8f472210-b1a2-4f98-bd0a-36da515b0543")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 88.1961 106.68 0)
+			(at 88.1961 104.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5040,7 +5040,7 @@
 	)
 	(global_label "ETH_MISO"
 		(shape input)
-		(at 76.2 104.14 0)
+		(at 76.2 106.68 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5050,7 +5050,7 @@
 		)
 		(uuid "dfa68960-1a50-4843-a275-5a032d035a00")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 88.1961 104.14 0)
+			(at 88.1961 106.68 0)
 			(effects
 				(font
 					(size 1.27 1.27)
