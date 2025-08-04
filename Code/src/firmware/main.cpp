@@ -266,7 +266,7 @@ void init_w5500(void) {
 
     memcpy(netinfo.mac, id.id, 6);
     netinfo.mac[0] = (netinfo.mac[0] & 0xfe ) | 0x02;
-    d
+    
     wizchip_setnetinfo(&netinfo);
 
 }
