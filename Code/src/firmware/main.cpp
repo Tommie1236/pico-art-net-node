@@ -266,7 +266,7 @@ void init_w5500(void) {
 
     memcpy(netinfo.mac, id.id, 6);
     netinfo.mac[0] = (netinfo.mac[0] & 0xfe ) | 0x02;
-
+    d
     wizchip_setnetinfo(&netinfo);
 
 }
@@ -302,13 +302,13 @@ void main_core_1 () {
                 //uint16_t universe = buf[14] | (buf[15] << 8);
 
                 static uint8_t dmx_frame[513];
-                dmx_frame[0] = 0;
+                dmx_frame[0] = 0;   // start byte
                 memcpy(dmx_frame + 1, buf + 18, 512);
 
-                gpio_put(PORT_A_LED_PIN, 0);
+                gpio_put(PORT_A_LED_PIN, 0);    // Dmx Status Led On
                 dmx_out.write(dmx_frame, 513);
                 while (dmx_out.busy());
-                gpio_put(PORT_A_LED_PIN, 1);
+                gpio_put(PORT_A_LED_PIN, 1);    // Led Off
             }
         }
 
