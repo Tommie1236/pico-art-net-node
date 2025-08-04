@@ -2,7 +2,7 @@
 
 # add source files
 add_executable(firmware
-  main.cpp
+  main.c
 )
 
 # include submodules
