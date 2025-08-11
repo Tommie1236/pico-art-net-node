@@ -81,7 +81,7 @@
     "files": [
       {
         "name": "pico-artnet-node.kicad_sch",
-        "open": true,
+        "open": false,
         "window": {
           "display": 0,
           "maximized": true,
@@ -93,14 +93,14 @@
       },
       {
         "name": "pico-artnet-node.kicad_pcb",
-        "open": true,
+        "open": false,
         "window": {
           "display": 0,
           "maximized": true,
           "pos_x": 0,
           "pos_y": 0,
           "size_x": 1280,
-          "size_y": 720
+          "size_y": 697
         }
       }
     ]
