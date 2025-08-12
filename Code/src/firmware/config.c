@@ -41,7 +41,7 @@ void config_reset(config_t* config){
 
     memset(config, 0, sizeof(config_t));
 
-    config->ip[0] = 2;
+    config->ip[0] = 10;
     config->ip[1] = 0;
     config->ip[2] = 0;
     config->ip[3] = 10;
@@ -51,8 +51,17 @@ void config_reset(config_t* config){
     config->subnet[2] = 0;
     config->subnet[3] = 0;
 
-    // reset node name. padding at end to fill entire 18 bytes.
-    memcpy(config->node_name, "Pico Artnet Node  ", 18); 
+    // gateway isn't really used but is still reset.
+    config->gateway[0] = 0;
+    config->gateway[1] = 0;
+    config->gateway[2] = 0;
+    config->gateway[3] = 0;
+
+    // reset names to blank and copy in default name.
+    memset(config->node_name, " ", 18);
+    memcpy(config->node_name, "Pico Artnet Node", 16); 
+    memset(config->long_node_name, " ", 64);
+    memcpy(config->long_node_name, "Pico Artnet Node", 16);
     
     config->port_A_status = OUTPUT;
     config->port_B_status = OUTPUT;

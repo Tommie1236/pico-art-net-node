@@ -19,11 +19,13 @@ typedef struct {
     uint8_t ip[4];
     uint8_t subnet[4];
     char node_name[18];
+    char long_node_nage[64];
     port_status_t port_A_status;
     uint16_t port_A_universe;
     port_status_t port_B_status;
     uint16_t port_B_universe;
     uint32_t magic_number; // 0x434E4647 CNFG
+    bool updated;
 } config_t;
 
 
