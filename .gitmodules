@@ -1,12 +1,6 @@
 [submodule "Code/lib/pico-sdk"]
 	path = Code/lib/pico-sdk
 	url = https://github.com/raspberrypi/pico-sdk
-[submodule "Code/lib/Pico-DMX"]
-	path = Code/lib/Pico-DMX
-	url = https://github.com/jostlowe/Pico-DMX
-[submodule "Code/lib/pico-ssd1306"]
-	path = Code/lib/pico-ssd1306
-	url = https://github.com/Harbys/pico-ssd1306
 [submodule "Code/lib/ioLibrary_Driver"]
 	path = Code/lib/ioLibrary_Driver
 	url = https://github.com/Wiznet/ioLibrary_Driver
