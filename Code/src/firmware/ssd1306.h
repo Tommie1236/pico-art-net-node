@@ -13,13 +13,24 @@
 // in the ssd1306.
 #define FRAMEBUFFER_SIZE 1024
 
-void ssd1306_byte_or(ssd1306_display_t *display, uint16_t idx, uint8_t byte);
+void ssd1306_byte_or(
+    ssd1306_display_t *display,
+    uint16_t idx,
+    uint8_t byte);
 
-void ssd1306_byte_and(ssd1306_display_t *display, uint16_t idx, uint8_t byte);
+void ssd1306_byte_and(
+    ssd1306_display_t *display,
+    uint16_t idx,
+    uint8_t byte);
 
-void ssd1306_byte_xor(ssd1306_display_t *display, uint16_t idx, uint8_t byte);
+void ssd1306_byte_xor(
+    ssd1306_display_t *display,
+    uint16_t idx,
+    uint8_t byte);
 
-void ssd1306_set_buffer(ssd1306_display_t *display, uint8_t *new_buffer);
+void ssd1306_set_buffer(
+    ssd1306_display_t *display,
+    uint8_t *new_buffer);
 
 const enum register_addresses {
     SSD1306_CONTRAST = 0x81;
@@ -66,24 +77,80 @@ typedef enum write_mode_t {
     INVERT = 2,
 };
 
-void ssd1306_send_command(ssd1306_display_t *display, uint8_t command);
+void ssd1306_send_command(
+    ssd1306_display_t *display,
+    uint8_t command);
 
-void ssd1306_set_pixel(ssd1306_display_t *display, uint8_t x, uint8_t y, write_mode_t mode = ADD);
+void ssd1306_set_pixel(
+    ssd1306_display_t *display,
+    uint8_t x,
+    uint8_t y,
+    write_mode_t mode = ADD);
 
-void ssd1306_send_buffer(ssd1306_display_t *display);
+void ssd1306_send_buffer(
+    ssd1306_display_t *display);
 
-void ssd1306_add_bitmap_image(ssd1306_display_t *display, uint8_t x, uint8_t y, uint8_t width, uint8_t height,
-                              uint8_t *image, write_mode_t mode = ADD);
+void ssd1306_add_bitmap_image(
+    ssd1306_display_t *display,
+    uint8_t x,
+    uint8_t y,
+    uint8_t width,
+    uint8_t height,
+    uint8_t *image,
+    write_mode_t mode = ADD);
 
-void ssd1306_clear(ssd1306_display_t *display);
+void ssd1306_clear(
+    ssd1306_display_t *display);
 
-void ssd1306_set_contrast(ssd1306_display_t *display, uint8_t contrast);
+void ssd1306_set_contrast(
+    ssd1306_display_t *display,
+    uint8_t contrast);
 
-void ssd1306_turn_on(ssd1306_display_t *display);
+void ssd1306_turn_on(
+    ssd1306_display_t *display);
 
-void ssd1306_turn_off(ssd1306_display_t *display);
+void ssd1306_turn_off(
+    ssd1306_display_t *display);
 
+// -- Shapes --
 
+viod ssd1306_draw_line(
+    ssd1306_display_t *display,
+    uint8_t x0,
+    uint8_t y0,
+    uint8_t x1,
+    uint8_t y1,
+    write_mode_t mode = ADD);
+
+void ssd1306_draw_rect(
+    ssd1306_display_t *display,
+    uint8_t x0,
+    uint8_t y0,
+    uint8_t x1,
+    uint8_t y1,
+    write_mode_t mode = ADD);
+
+void ssd1306_fill_rect(
+    ssd1306_display_t *display,
+    uint8_t x0,
+    uint8_t y0,
+    uint8_t x1,
+    uint8_t y1,
+    write_mode_t mode = ADD);
+
+void ssd1306_draw_circle(
+    ssd1306_display_t *display,
+    uint8_t xc,
+    uint8_t yc,
+    uint8_t r,
+    write_mode_t mode = ADD);
+
+void ssd1306_draw_circle(
+    ssd1306_display_t *display,
+    uint8_t xc,
+    uint8_t yc,
+    uint8_t r,
+    write_mode_t mode = ADD);
 
 
 #endif // SSD1306_H
