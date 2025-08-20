@@ -4,14 +4,39 @@
 #ifndef SSD1306_H
 #define SSD1306_H
 
+#include <string.h>
 
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
+
+typedef struct ssd1306_display_t{
+    i2c_inst_t *i2c_inst; 
+    uint16_t i2c_addr;
+    uint8_t *buffer;
+    uint8_t width;  // 128px
+    uint8_t height; // 64|32px
+    bool inverted;
+}ssd1306_display_t;
+
+typedef enum {
+    ADD = 0,
+    SUBTRACT = 1,
+    INVERT = 2,
+}write_mode_t ;
+
+void ssd1306_setup();
 
 // (128x64)/8 = 1024 bytes
 // for both 128x64 and 128x32 displays due to memory mapping
 // in the ssd1306.
 #define FRAMEBUFFER_SIZE 1024
+
+void ssd1306_init(
+    ssd1306_display_t *display,
+    i2c_inst_t *i2c_inst,
+    uint16_t i2c_addr,
+    uint8_t width,
+    uint8_t height);
 
 void ssd1306_byte_or(
     ssd1306_display_t *display,
@@ -32,49 +57,36 @@ void ssd1306_set_buffer(
     ssd1306_display_t *display,
     uint8_t *new_buffer);
 
-const enum register_addresses {
-    SSD1306_CONTRAST = 0x81;
-    SSD1306_DISPLAYALL_ON_RESUME = 0xA4;
-    SSD1306_DISPLAYALL_ON = 0xA5;
-    SSD1306_INVERTED_OFF = 0xA6;
-    SSD1306_INVERTED_ON = 0xA7;
-    SSD1306_DISPLAY_OFF = 0xAE;
-    SSD1306_DISPLAY_ON = 0xAF;
-    SSD1306_DISPLAYOFFSET = 0xD3;
-    SSD1306_COMPINS = 0xDA;
-    SSD1306_VCOMDETECT = 0x0B;
-    SSD1306_DISPLAYCLOCKDIV = 0xD5;
-    SSD1306_PRECHARGE = 0xD9;
-    SSD1306_MULTIPLEX = 0xA8;
-    SSD1306_LOWCOLUMN = 0x00;
-    SSD1306_HIGHCOLUMN = 0x10;
-    SSD1306_STARTLINE = 0x40;
-    SSD1306_MEMORYMODE = 0x20;
-    SSD1306_MEMORYMODE_HORIZONTAL = 0x00;
-    SSD1306_MEMORYMODE_VERTICAL = 0x01;
-    SSD1306_MEMORYMODE_PAGE = 0x10;
-    SSD1306_COLUMNADDR = 0x21;
-    SSD1306_COM_REMAP_OFF = 0xC0;
-    SSD1306_COM_REMAP_ON = 0xC8;
-    SSD1306_CLUMN_REMAP_OFF = 0xA0;
-    SSD1306_CLUMN_REMAP_ON = 0xA1;
-    SSD1306_CHARGEPUMP = 0x8D;
-    SSD1306_EXTERNALVCC = 0x1;
-    SSD1306_SWITCHCAPVCC = 0x2;
-};
-
-typedef struct {
-    i2c_inst_t *i2c_inst; 
-    uint16_t i2c_addr;
-    uint8_t *buffer;
-    uint8_t width;  // 128px
-    uint8_t height; // 64|32px
-} ssd1306_display_t;
-
-typedef enum write_mode_t {
-    ADD = 0,
-    SUBTRACT = 1,
-    INVERT = 2,
+enum register_addresses {
+    SSD1306_CONTRAST = 0x81,
+    SSD1306_DISPLAYALL_ON_RESUME = 0xA4,
+    SSD1306_DISPLAYALL_ON = 0xA5,
+    SSD1306_INVERTED_OFF = 0xA6,
+    SSD1306_INVERTED_ON = 0xA7,
+    SSD1306_DISPLAY_OFF = 0xAE,
+    SSD1306_DISPLAY_ON = 0xAF,
+    SSD1306_DISPLAYOFFSET = 0xD3,
+    SSD1306_COMPINS = 0xDA,
+    SSD1306_VCOMDETECT = 0xDB,
+    SSD1306_DISPLAYCLOCKDIV = 0xD5,
+    SSD1306_PRECHARGE = 0xD9,
+    SSD1306_MULTIPLEX = 0xA8,
+    SSD1306_LOWCOLUMN = 0x00,
+    SSD1306_HIGHCOLUMN = 0x10,
+    SSD1306_STARTLINE = 0x40,
+    SSD1306_MEMORYMODE = 0x20,
+    SSD1306_MEMORYMODE_HORIZONTAL = 0x00,
+    SSD1306_MEMORYMODE_VERTICAL = 0x01,
+    SSD1306_MEMORYMODE_PAGE = 0x10,
+    SSD1306_COLUMNADDR = 0x21,
+    SSD1306_PAGEADDR = 0x22,
+    SSD1306_COM_REMAP_OFF = 0xC0,
+    SSD1306_COM_REMAP_ON = 0xC8,
+    SSD1306_CLUMN_REMAP_OFF = 0xA0,
+    SSD1306_CLUMN_REMAP_ON = 0xA1,
+    SSD1306_CHARGEPUMP = 0x8D,
+    SSD1306_EXTERNALVCC = 0x1,
+    SSD1306_SWITCHCAPVCC = 0x2
 };
 
 void ssd1306_send_command(
@@ -85,7 +97,7 @@ void ssd1306_set_pixel(
     ssd1306_display_t *display,
     uint8_t x,
     uint8_t y,
-    write_mode_t mode = ADD);
+    write_mode_t mode);
 
 void ssd1306_send_buffer(
     ssd1306_display_t *display);
@@ -97,7 +109,7 @@ void ssd1306_add_bitmap_image(
     uint8_t width,
     uint8_t height,
     uint8_t *image,
-    write_mode_t mode = ADD);
+    write_mode_t mode);
 
 void ssd1306_clear(
     ssd1306_display_t *display);
@@ -114,13 +126,13 @@ void ssd1306_turn_off(
 
 // -- Shapes --
 
-viod ssd1306_draw_line(
+void ssd1306_draw_line(
     ssd1306_display_t *display,
     uint8_t x0,
     uint8_t y0,
     uint8_t x1,
     uint8_t y1,
-    write_mode_t mode = ADD);
+    write_mode_t mode);
 
 void ssd1306_draw_rect(
     ssd1306_display_t *display,
@@ -128,7 +140,7 @@ void ssd1306_draw_rect(
     uint8_t y0,
     uint8_t x1,
     uint8_t y1,
-    write_mode_t mode = ADD);
+    write_mode_t mode);
 
 void ssd1306_fill_rect(
     ssd1306_display_t *display,
@@ -136,21 +148,21 @@ void ssd1306_fill_rect(
     uint8_t y0,
     uint8_t x1,
     uint8_t y1,
-    write_mode_t mode = ADD);
+    write_mode_t mode);
 
 void ssd1306_draw_circle(
     ssd1306_display_t *display,
     uint8_t xc,
     uint8_t yc,
     uint8_t r,
-    write_mode_t mode = ADD);
+    write_mode_t mode);
 
-void ssd1306_draw_circle(
+void ssd1306_fill_circle(
     ssd1306_display_t *display,
     uint8_t xc,
     uint8_t yc,
     uint8_t r,
-    write_mode_t mode = ADD);
+    write_mode_t mode);
 
 
 #endif // SSD1306_H

@@ -1,9 +1,73 @@
 // ssd1306.c
 // library for ssd1306 based oled display
 
-#include "math.h"
+#include <stdio.h>
+#include <math.h>
 
 #include "ssd1306.h"
+
+
+void ssd1306_init(
+    ssd1306_display_t *display,
+    i2c_inst_t *i2c_inst,
+    uint16_t i2c_addr,
+    uint8_t width,
+    uint8_t height) {
+
+    // return if not 128x64, will support 32 high later.
+    if ((width != 128) || (height != 64)) return;
+    display->width = 128;
+    display->height = 64;
+
+    display->inverted = 0;
+
+    uint8_t setup_cmds[] = {
+        SSD1306_DISPLAY_OFF,
+        SSD1306_LOWCOLUMN,
+        SSD1306_HIGHCOLUMN,
+        SSD1306_STARTLINE,
+
+        SSD1306_MEMORYMODE,
+        SSD1306_MEMORYMODE_HORIZONTAL,
+
+        SSD1306_CONTRAST,
+        0xFF,
+
+        SSD1306_INVERTED_OFF,
+
+        SSD1306_MULTIPLEX,
+        0x3E,
+
+        SSD1306_DISPLAYOFFSET,
+        0x00,
+        
+        SSD1306_DISPLAYCLOCKDIV,
+        0x80,
+
+        SSD1306_PRECHARGE,
+        0x22,
+
+        SSD1306_COMPINS,
+        0x12,
+
+        SSD1306_VCOMDETECT,
+        0x40,
+
+        SSD1306_CHARGEPUMP,
+        0x14,
+
+        SSD1306_DISPLAYALL_ON_RESUME,
+        SSD1306_DISPLAY_ON
+    };
+
+    for (uint8_t i = 0; i < 25; i++) {
+        printf("i: %d\n", i);
+        ssd1306_send_command(display, setup_cmds[i]);
+    };
+
+    ssd1306_clear(display);
+    ssd1306_send_buffer(display);
+}
 
 
 void ssd1306_byte_or(
@@ -44,15 +108,17 @@ void ssd1306_send_command(
     ssd1306_display_t *display,
     uint8_t command) {
 
+    printf("command: %x\n", command);
     uint8_t data[2] = {0x00, command};
-    i2c_write_blocking(display->i2c_inst, display->i2c_addr, data, 2, false);
+    //i2c_write_timeout_us(display->i2c_inst, display->i2c_addr, data, 2, true, 100000);
+    i2c_write_timeout_us(i2c0,0x3c, data, 2, true, 100000);
 }
 
 void ssd1306_set_pixel(
     ssd1306_display_t *display,
     uint8_t x,
     uint8_t y,
-    write_mode_t mode = ADD) {
+    write_mode_t mode) {
 
     // check for valid position
     if ((x < 0) ||
@@ -71,27 +137,27 @@ void ssd1306_set_pixel(
 
     switch (mode) {
         case ADD:
-            ssd1306_byte_or(display->buffer, x + (y / 8) * display->width, byte);        
+            ssd1306_byte_or(display, x + (y / 8) * display->width, byte);        
             break;
 
         case SUBTRACT:
-            ssd1306_byte_and(display->buffer, x + (y / 8) * display->width, ~byte);        
+            ssd1306_byte_and(display, x + (y / 8) * display->width, ~byte);        
             break;
 
         case INVERT:
-            ssd1306_byte_xor(display->buffer, x + (y / 8) * display->width, byte);        
+            ssd1306_byte_xor(display, x + (y / 8) * display->width, byte);        
             break;
     }
 }
 
 void ssd1306_send_buffer(ssd1306_display_t *display) {
     
-    ssd1306_send_command(SSD1306_PAGEADDR);
-    ssd1306_send_command(0x00);
-    ssd1306_send_command(0x07);
-    ssd1306_send_command(SSD1306_COLUMNADDR);
-    ssd1306_send_command(0x00);
-    ssd1306_send_command(0x7F);
+    ssd1306_send_command(display, SSD1306_PAGEADDR);
+    ssd1306_send_command(display, 0x00);
+    ssd1306_send_command(display, 0x07);
+    ssd1306_send_command(display, SSD1306_COLUMNADDR);
+    ssd1306_send_command(display, 0x00);
+    ssd1306_send_command(display, 0x7F);
 
     uint8_t data[FRAMEBUFFER_SIZE + 1];
 
@@ -113,30 +179,30 @@ void ssd1306_send_buffer(ssd1306_display_t *display) {
 //     uint8_t width,
 //     uint8_t heigth,
 //     uint8_t *image,
-//     write_mode_t mode = ADD) {
+//     write_mode_t mode) {
 // 
 // 
 // }
 
 void ssd1306_clear(ssd1306_display_t *display) {
 
-    memset(display->buffer, 0, FRAMEBUFFER_SIZE);
+    memset(display->buffer, 1, FRAMEBUFFER_SIZE);
 }
 
 void ssd1306_set_contrast(
     ssd1306_display_t *display,
     uint8_t contrast) {
 
-    ssd1306_send_command(SSD1306_CONTRAST);
-    ssd1306_send_command(contrast);
+    ssd1306_send_command(display, SSD1306_CONTRAST);
+    ssd1306_send_command(display, contrast);
 }
 
 void ssd1306_turn_on(ssd1306_display_t *display) {
-    ssd1306_send_command(SSD1306_DISPLAY_ON);
+    ssd1306_send_command(display, SSD1306_DISPLAY_ON);
 }
 
 void ssd1306_turn_off(ssd1306_display_t *display) {
-    ssd1306_send_command(SSD1306_DISPLAY_OFF);
+    ssd1306_send_command(display, SSD1306_DISPLAY_OFF);
 }
 
 void ssd1306_draw_line(
@@ -145,7 +211,7 @@ void ssd1306_draw_line(
     uint8_t y0,
     uint8_t x1,
     uint8_t y1,
-    write_mode_t mode = ADD) {
+    write_mode_t mode) {
 
     uint8_t dx = fabs(x1 - x0);
     uint8_t dy = fabs(y1 - y0);
@@ -157,7 +223,7 @@ void ssd1306_draw_line(
         uint8_t x = x0;
         uint8_t y = y0;
 
-        for (uint8_t i = 0; i =< dx; i++) {
+        for (uint8_t i = 0; i <= dx; i++) {
             ssd1306_set_pixel(display, x, y, mode);
             x += sx;
 
@@ -174,14 +240,14 @@ void ssd1306_draw_line(
         uint8_t x = x0;
         uint8_t y = y0;
 
-        for (uint8_t i = 0; i =< dy; i++) {
+        for (uint8_t i = 0; i <= dy; i++) {
             ssd1306_set_pixel(display, x, y, mode);
-            y += yx;
+            y += sy;
 
             p += (dx << 1);
             
             if (p >= 0) {
-                x += xy;
+                x += sx;
                 p -= (dy << 1);
             }
         }
@@ -197,19 +263,19 @@ void ssd1306_draw_rect(
     uint8_t y0,
     uint8_t x1,
     uint8_t y1,
-    write_mode_t mode = ADD) {
+    write_mode_t mode) {
 
     // TODO: 
     // doesn't work with coords in wrong order.
 
-    for (uint8_t x = x0; x <= x1, x++) {
-        for (uint8_t y = y0; y <= y1, y++) {
+    for (uint8_t x = x0; x <= x1; x++) {
+        for (uint8_t y = y0; y <= y1; y++) {
             if ((x == x0) ||
                 (x == x1) ||
                 (y == y0) ||
                 (y == y1)) {
 
-                ssd1306_set_pixel(display, x, y, mode)
+                ssd1306_set_pixel(display, x, y, mode);
             }
         }
     }
@@ -221,12 +287,21 @@ void ssd1306_fill_rect(
     uint8_t y0,
     uint8_t x1,
     uint8_t y1,
-    write_mode_t mode = ADD) {
+    write_mode_t mode) {
 
-    for (uint8_t x = x0; x <= x1, x++) {
-        for (uint8_t y = y0; y <= y1, y++) {
+    for (uint8_t x = x0; x <= x1; x++) {
+        for (uint8_t y = y0; y <= y1; y++) {
             
-            ssd1306_set_pixel(display, x, y, mode)
+            ssd1306_set_pixel(display, x, y, mode);
         }
     }
+}
+
+void ssd1306_draw_circle(
+    ssd1306_display_t *display,
+    uint8_t xc,
+    uint8_t yc,
+    uint8_t r,
+    write_mode_t mode) {
+
 }
