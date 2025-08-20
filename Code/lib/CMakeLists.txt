@@ -1,6 +1,3 @@
-include(Pico-DMX/interfaceLibForPicoSDK.cmake)
-add_subdirectory(pico-ssd1306)
-
 add_library(ioLibrary STATIC
     ioLibrary_Driver/Ethernet/socket.c
     ioLibrary_Driver/Ethernet/W5500/w5500.c

@@ -3,6 +3,7 @@
 # add source files
 add_executable(firmware
   main.c
+  ssd1306.c
 )
 
 # include submodules
@@ -12,17 +13,10 @@ add_executable(firmware
 # link in libraries (almost every hardware/<blah>.h or pico/<blah>.h is hardware_blah or pico_blah)
 target_link_libraries(firmware PRIVATE
     pico_stdlib
-    pico_multicore
-    hardware_spi
     hardware_gpio
-    hardware_pio
-    hardware_dma
-    hardware_adc
     hardware_i2c
 
-    ioLibrary
-    picodmx
-    pico_ssd1306
+    # ioLibrary
 )
 
 # enable usb/uart stdio
@@ -41,19 +35,18 @@ target_compile_options(firmware PRIVATE
     -fno-check-new 
     $<$<COMPILE_LANGUAGE:CXX>:-fno-enforce-eh-specs>
     -g 
+    -Os
     -ffunction-sections 
     -fdata-sections 
     -O3
     -funroll-loops 
     -Werror 
     -Wall
-    -Wno-unused-function
-    -Wno-error=unused-function
 )
 
 # preprocessor macros
 target_compile_definitions(firmware PRIVATE 
-    PICO_HEAP_SIZE=2048
+    PICO_HEAP_SIZE=0
     PICO_XOSC_STARTUP_DELAY_MULTIPLIER=64
 )
 
@@ -63,10 +56,10 @@ target_compile_definitions(firmware PRIVATE
 
 # create map/bin/hex file etc.
 pico_add_extra_outputs(firmware)
-#pico_add_dis_output2(firmware)
   
 
 # linker options
+add_link_options(-s, -Wl)
 target_link_options(firmware
     PRIVATE "LINKER:--print-memory-usage"
 )
