@@ -2,7 +2,11 @@
 
 #include "config.h"
 
+#include <string.h>
+
 #include "hardware/flash.h"
+#include "hardware/irq.h"
+#include "pico/critical_section.h" // interrupts
 
 
 void config_save(config_t* config){
@@ -11,7 +15,7 @@ void config_save(config_t* config){
     config->magic_number = CONFIG_MAGIC;
 
     // Disable interrupts to write to flash.
-    uint32_t interupts = save_and_disable_interrupts();
+    uint32_t interrupts = save_and_disable_interrupts();
 
     flash_range_erase(FLASH_TARGET_OFFSET, 4096);
     flash_range_program(FLASH_TARGET_OFFSET, (const uint8_t*)config, sizeof(config_t));
@@ -41,32 +45,21 @@ void config_reset(config_t* config){
 
     memset(config, 0, sizeof(config_t));
 
-    config->ip[0] = 10;
-    config->ip[1] = 0;
-    config->ip[2] = 0;
-    config->ip[3] = 10;
-
-    config->subnet[0] = 255;
-    config->subnet[1] = 0;
-    config->subnet[2] = 0;
-    config->subnet[3] = 0;
-
+    memcpy(config->ip, (uint8_t[]) {10, 0, 0, 10}, 4);
+    memcpy(config->subnet, (uint8_t[]) {255, 0, 0, 0}, 4);
     // gateway isn't really used but is still reset.
-    config->gateway[0] = 0;
-    config->gateway[1] = 0;
-    config->gateway[2] = 0;
-    config->gateway[3] = 0;
+    memcpy(config->gateway, (uint8_t[]) {0, 0, 0, 0}, 4);
 
     // reset names to blank and copy in default name.
-    memset(config->node_name, " ", 18);
+    memset(config->node_name, ' ', 18);
     memcpy(config->node_name, "Pico Artnet Node", 16); 
-    memset(config->long_node_name, " ", 64);
+    memset(config->long_node_name, ' ', 64);
     memcpy(config->long_node_name, "Pico Artnet Node", 16);
     
     config->port_A_status = OUTPUT;
     config->port_B_status = OUTPUT;
     config->port_A_universe = 0;
-    config->port_0_universe = 1;
+    config->port_B_universe = 1;
 }
 
 

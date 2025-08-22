@@ -18,8 +18,9 @@ typedef enum {
 typedef struct {
     uint8_t ip[4];
     uint8_t subnet[4];
+    uint8_t gateway[4];
     char node_name[18];
-    char long_node_nage[64];
+    char long_node_name[64];
     port_status_t port_A_status;
     uint16_t port_A_universe;
     port_status_t port_B_status;
