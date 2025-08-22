@@ -2,7 +2,7 @@
 
 set -e    # Exit on error
 
-touch Code/src/firmware/main.cpp # touch file to always print linker memory usage
+touch Code/src/firmware/main.c # touch file to always print linker memory usage
 
 git submodule update --init --recursive
 cd Code/lib/pico-sdk/
@@ -18,7 +18,7 @@ make -j $(($(nproc) * 2))
 while getopts 'l' flag; do
   case "${flag}" in (l) 
       echo "Loading firmware <$(pwd)/src/firmware/firmware.bin> to RP2040"
-      sudo picotool load $(pwd)/src/firmware/firmware.bin -f --update
+      sudo picotool load $(pwd)/src/firmware/firmware.bin -f 
       ;;
   esac
 done

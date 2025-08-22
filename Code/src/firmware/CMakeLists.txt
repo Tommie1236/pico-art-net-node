@@ -4,6 +4,13 @@
 add_executable(firmware
   main.c
   ssd1306.c
+  artnet.c
+  input.c
+  menu.c
+  menu_items.c
+  ui.c
+  config.c
+  dmx.c
 )
 
 # include submodules
@@ -15,6 +22,7 @@ target_link_libraries(firmware PRIVATE
     pico_stdlib
     hardware_gpio
     hardware_i2c
+    hardware_irq
 
     # ioLibrary
 )
