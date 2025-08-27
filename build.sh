@@ -12,7 +12,7 @@ cd ../..
 mkdir -p build
 cp ./lib/pico-sdk/external/pico_sdk_import.cmake .
 cd build
-cmake .. -DPICO_BOARD=pico
+cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 .. -DPICO_BOARD=pico
 make -j $(($(nproc) * 2))
 
 while getopts 'l' flag; do
