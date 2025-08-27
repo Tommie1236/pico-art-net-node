@@ -277,12 +277,15 @@ void main_core_1 () {
     // TODO:
     // handle artnet connection and send the dmx data to the pio's
     // input isn't supported yet. only output.
-    DmxOutput dmx_out = DmxOutput();
+    DmxOutput dmx_out0 = DmxOutput();
+    DmxOutput dmx_out1 = DmxOutput();
 
     // set port A to output for now
     gpio_put(PORT_A_DIR_PIN, 1);
+    gpio_put(PORT_B_DIR_PIN, 1);
 
-    dmx_out.begin(PORT_A_TX_PIN);
+    dmx_out0.begin(PORT_A_TX_PIN);
+    dmx_out1.begin(PORT_B_TX_PIN);
 
     socket(0, Sn_MR_UDP, 6454, 0);
     printf("socket connected\n");
@@ -299,16 +302,23 @@ void main_core_1 () {
 
             if (opcode == 0x5000) {
                 //uint16_t length = (buf[16] << 8) | buf[17];
-                //uint16_t universe = buf[14] | (buf[15] << 8);
+                uint16_t universe = buf[14] | (buf[15] << 8);
 
                 static uint8_t dmx_frame[513];
                 dmx_frame[0] = 0;   // start byte
                 memcpy(dmx_frame + 1, buf + 18, 512);
 
-                gpio_put(PORT_A_LED_PIN, 0);    // Dmx Status Led On
-                dmx_out.write(dmx_frame, 513);
-                while (dmx_out.busy());
-                gpio_put(PORT_A_LED_PIN, 1);    // Led Off
+                if (universe == 0) {
+                    gpio_put(PORT_A_LED_PIN, 0);    // Dmx Status Led On
+                    dmx_out0.write(dmx_frame, 513);
+                    while (dmx_out0.busy());
+                    gpio_put(PORT_A_LED_PIN, 1);    // Led Off
+                } else if (universe == 1) {
+                    gpio_put(PORT_B_LED_PIN, 0);    // Dmx Status Led On
+                    dmx_out1.write(dmx_frame, 513);
+                    while (dmx_out1.busy());
+                    gpio_put(PORT_B_LED_PIN, 1);    // Led Off
+                }
             }
         }
 
