@@ -60,6 +60,8 @@ void config_reset(config_t* config){
     config->port_B_status = OUTPUT;
     config->port_A_universe = 0;
     config->port_B_universe = 1;
+
+    config->updated = true;
 }
 
 
