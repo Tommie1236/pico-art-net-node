@@ -8,7 +8,6 @@
 #include "hardware/irq.h"
 #include "pico/critical_section.h" // interrupts
 
-
 void config_save(config_t* config){
     
     // Make sure magic number is set.
@@ -60,6 +59,8 @@ void config_reset(config_t* config){
     config->port_B_status = OUTPUT;
     config->port_A_universe = 0;
     config->port_B_universe = 1;
+
+    config->sync_mode = false;
 
     config->updated = true;
 }
