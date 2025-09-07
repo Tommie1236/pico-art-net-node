@@ -8,6 +8,15 @@
 #define CONFIG_MAGIC 0x434E4647 // 'CNFG'
 #define FLASH_TARGET_OFFSET (PICO_FLASH_SIZE_BYTES - 4096)
 
+#define config_set(_config_ptr, _member, _value)        \
+    do {                                                \
+        __typeof__((_config_ptr)->_member) __temp_value = (_value); \
+        if ((_config_ptr)->_member != __temp_value) {   \
+            (_config_ptr)->_member = __temp_value;      \
+            (_config_ptr)->updated = true;              \
+        }                                               \
+    } while (0);
+
 typedef enum {
     INPUT,
     OUTPUT,
@@ -26,9 +35,9 @@ typedef struct {
     port_status_t port_B_status;
     uint16_t port_B_universe;
     uint32_t magic_number; // 0x434E4647 CNFG
+    bool sync_mode;
     bool updated;
 } config_t;
-
 
 
 void config_save(config_t* config);
