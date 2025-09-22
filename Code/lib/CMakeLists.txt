@@ -11,3 +11,7 @@ target_include_directories(ioLibrary PUBLIC
 target_compile_definitions(ioLibrary PUBLIC
     _WIZCHIP_=W5500
 )
+
+target_compile_options(ioLibrary PUBLIC
+    -Wno-unused-function
+)

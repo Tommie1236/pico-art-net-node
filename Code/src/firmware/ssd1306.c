@@ -21,6 +21,9 @@ void ssd1306_init(
 
     display->inverted = 0;
 
+    display->i2c_addr = i2c_addr;
+    display->i2c_inst = i2c_inst;
+
     uint8_t setup_cmds[] = {
         SSD1306_DISPLAY_OFF,
         SSD1306_LOWCOLUMN,
@@ -110,8 +113,7 @@ void ssd1306_send_command(
 
     printf("command: %x\n", command);
     uint8_t data[2] = {0x00, command};
-    //i2c_write_timeout_us(display->i2c_inst, display->i2c_addr, data, 2, true, 100000);
-    i2c_write_timeout_us(i2c0,0x3c, data, 2, true, 100000);
+    i2c_write_blocking(display->i2c_inst, display->i2c_addr, data, 2, false);
 }
 
 void ssd1306_set_pixel(
@@ -121,10 +123,8 @@ void ssd1306_set_pixel(
     write_mode_t mode) {
 
     // check for valid position
-    if ((x < 0) ||
-        (x > display->width) || 
-        (y < 0) || 
-        (y > display->height)) return;
+    if ((x >= display->width) || 
+        (y >= display->height)) return;
 
     // TODO: 128x32 needs something special.
     // can't yet figure out what precisely.

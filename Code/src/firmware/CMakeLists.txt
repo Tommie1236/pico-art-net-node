@@ -25,11 +25,11 @@ target_link_libraries(firmware PRIVATE
     hardware_spi
     hardware_irq
 
-    # ioLibrary
+    ioLibrary
 )
 
 # enable usb/uart stdio
-pico_enable_stdio_usb(firmware 1)
+pico_enable_stdio_usb(firmware 0)
 pico_enable_stdio_uart(firmware 0) 
 
 
@@ -56,7 +56,6 @@ target_compile_options(firmware PRIVATE
 # preprocessor macros
 target_compile_definitions(firmware PRIVATE 
     PICO_HEAP_SIZE=0
-    PICO_XOSC_STARTUP_DELAY_MULTIPLIER=64
 )
 
 # select linker script
@@ -69,6 +68,7 @@ pico_add_extra_outputs(firmware)
 
 # linker options
 add_link_options(-s, -Wl)
-target_link_options(firmware
-    PRIVATE "LINKER:--print-memory-usage"
+add_link_options(-Wl, --gc-sections)
+target_link_options(firmware PRIVATE
+    "LINKER:--print-memory-usage"
 )
