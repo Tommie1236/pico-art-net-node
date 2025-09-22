@@ -9,6 +9,10 @@
 #include "pico/critical_section.h" // interrupts
 
 void config_save(config_t* config){
+
+    if (!config->updated) { // don't do anything if the config didn't change
+        return;
+    }
     
     // Make sure magic number is set.
     config->magic_number = CONFIG_MAGIC;

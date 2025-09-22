@@ -23,6 +23,8 @@ static uint8_t eth_buf[550] = {0};
 // A artnet packet should be max
 // 530 bytes, but adding a bit of extra buffer.
 
+static uint8_t last_dmx_packet_ip[4] = {0};
+
 void process_artnet(config_t *config) {
 
     // disable synchronus output after 4 seconds of no artSync packet
@@ -72,6 +74,7 @@ void process_artnet(config_t *config) {
                 // uint16_t universe = eth_buf[14] | (eth_buf[15] << 8);
 
                 // TODO: put correct dmx data vars here and uncomment
+                //
                 // if (config->port_A_universe == universe) {
                 //     memcpy(port_A_dmx_data, eth_buf + 18, lenght);
                 //     port_A_updated = true;
@@ -97,6 +100,18 @@ void process_artnet(config_t *config) {
 
             // artIpProg
             case 0xf8:
+                if (eth_buf[14] & 0b1) { // set port
+                    // hardcoded to 6465 for now
+
+                }
+                if (eth_buf[14] & (0b1 << 1)) { // set subnet
+                    memcpy(config->subnet, eth_buf + 20, 4);
+                    config->updated = true;
+                }
+                if (eth_buf[14] & (0b1 << 2)) { // set ip addr
+                    memcpy(config->ip, eth_buf + 16, 4);
+                    config->updated = true;
+                }
                 break;
         } 
 
@@ -124,7 +139,7 @@ static void wizchip_cs_deselect(void) {
     gpio_put(eth_cs_pin, 1);
 }
 
-void setup_w5500(spi_inst_t *spi_inst,
+wiz_NetInfo* setup_w5500(spi_inst_t *spi_inst,
                  uint8_t sck_pin,
                  uint8_t mosi_pin,
                  uint8_t miso_pin,
@@ -154,8 +169,16 @@ void setup_w5500(spi_inst_t *spi_inst,
     reg_wizchip_spi_cbfunc(wizchip_spi_read, wizchip_spi_write);
     reg_wizchip_cs_cbfunc(wizchip_cs_select, wizchip_cs_deselect);
 
+    uint8_t tx_rx_mem[2][8] = { {2,2,2,2,2,2,2,2}, {2,2,2,2,2,2,2,2}};
 
     socket(0, Sn_MR_UDP, 6465, 0);
+
+    wizchip_init(tx_rx_mem[0], tx_rx_mem[1]);
+
+    static wiz_NetInfo netinfo;
+
+    setup_network(&netinfo);
+    return &netinfo;
 }
 
 void setup_network(wiz_NetInfo *net_info) {

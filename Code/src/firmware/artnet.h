@@ -1,4 +1,5 @@
 // artnet.h
+
 // all the ethernet and artnet handeling.
 
 #ifndef ARTNET_H
@@ -17,7 +18,7 @@
 
 void process_artnet(config_t *config);
 
-void setup_w5500(spi_inst_t *eth_spi_inst,
+wiz_NetInfo* setup_w5500(spi_inst_t *eth_spi_inst,
                  uint8_t eth_sck_pin,
                  uint8_t eth_mosi_pin,
                  uint8_t eth_miso_pin,
