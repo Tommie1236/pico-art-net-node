@@ -48,6 +48,7 @@ typedef struct menu_t {
     const char* title[10];      // 12x16 font. 128 // 12 = 10
     const menu_item_t* items;   // Pointer to array of menu items.
     const uint8_t num_items;    // number of items in said array.
+    const uint8_t port;         // 0 if not applicable, 1/2 for A/B (and other expansions later)
 } menu_t;
 
 

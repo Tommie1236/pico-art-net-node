@@ -18,15 +18,16 @@
 
 void process_artnet(config_t *config);
 
-wiz_NetInfo* setup_w5500(spi_inst_t *eth_spi_inst,
-                 uint8_t eth_sck_pin,
-                 uint8_t eth_mosi_pin,
-                 uint8_t eth_miso_pin,
-                 uint8_t eth_cs_pin,
-                 uint8_t eth_rst_pin
-                 );
+wiz_NetInfo* setup_w5500(config_t *config,
+                         spi_inst_t *eth_spi_inst,
+                         uint8_t eth_sck_pin,
+                         uint8_t eth_mosi_pin,
+                         uint8_t eth_miso_pin,
+                         uint8_t eth_cs_pin,
+                         uint8_t eth_rst_pin
+                         );
 
-void setup_network(wiz_NetInfo *net_info);
+void setup_network(config_t *config, wiz_NetInfo *net_info);
 
 
 #endif // ARTNET_d

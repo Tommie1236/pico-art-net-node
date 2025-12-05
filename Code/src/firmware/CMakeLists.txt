@@ -7,8 +7,6 @@ add_executable(firmware
   artnet.c
   input.c
   menu.c
-  menu_items.c
-  ui.c
   config.c
   dmx.c
 )
@@ -20,21 +18,20 @@ add_executable(firmware
 # link in libraries (almost every hardware/<blah>.h or pico/<blah>.h is hardware_blah or pico_blah)
 target_link_libraries(firmware PRIVATE
     pico_stdlib
+    pico_unique_id
     hardware_gpio
     hardware_i2c
     hardware_spi
     hardware_irq
+    hardware_pio
+    
 
     ioLibrary
 )
 
 # enable usb/uart stdio
-pico_enable_stdio_usb(firmware 0)
+pico_enable_stdio_usb(firmware 1)
 pico_enable_stdio_uart(firmware 0) 
-
-
-
-
 
 
 # compiler flags

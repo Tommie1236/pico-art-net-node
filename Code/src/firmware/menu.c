@@ -3,7 +3,7 @@
 #include "menu.h"
 
 
-goid menu_enter_menu(const menu_t *menu) {
+void menu_enter_menu(const menu_t *menu) {
     menu_stack_push(menu);
     menu_state.edit = 0;
 }
@@ -114,4 +114,10 @@ void menu_button_down() {
 
 void menu_draw_menu() {
 
+
+
+    if (menu_state.stack[menu_state.stack_pointer]->port != 0) {
+        // TODO: replace 'X' with port letter
+
+    }
 }

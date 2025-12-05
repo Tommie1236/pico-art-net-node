@@ -31,11 +31,10 @@ void config_save(config_t* config){
 void config_load(config_t* config){
 
     const uint32_t* flash_ptr = (const uint32_t*)(XIP_BASE + FLASH_TARGET_OFFSET);
-    const config_t* flash_config = (const config_t*) flash_ptr;
+    const config_t* flash_config_ptr = (const config_t*) flash_ptr;
 
-    if (flash_config->magic_number == CONFIG_MAGIC) {
-        memcpy(config, flash_config, sizeof(config_t));
-
+    if (flash_config_ptr->magic_number == CONFIG_MAGIC) {
+        memcpy(config, flash_config_ptr, sizeof(config_t));
     } else {
         // Fallback if no valid config in flash.
         config_reset(config);
@@ -48,8 +47,8 @@ void config_reset(config_t* config){
 
     memset(config, 0, sizeof(config_t));
 
-    memcpy(config->ip, (uint8_t[]) {10, 0, 0, 10}, 4);
-    memcpy(config->subnet, (uint8_t[]) {255, 0, 0, 0}, 4);
+    memcpy(config->ip, (uint8_t[]) {192, 168, 2, 230}, 4);
+    memcpy(config->subnet, (uint8_t[]) {255, 255, 255, 0}, 4);
     // gateway isn't really used but is still reset.
     memcpy(config->gateway, (uint8_t[]) {0, 0, 0, 0}, 4);
 
@@ -68,8 +67,4 @@ void config_reset(config_t* config){
 
     config->updated = true;
 }
-
-
-
-
 

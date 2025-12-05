@@ -12,7 +12,7 @@
 // general 
 void dmx_init();
 
-viod dmx_deinit();
+void dmx_deinit();
 
 // dmx output
 void dmx_write();
