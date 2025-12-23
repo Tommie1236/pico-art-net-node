@@ -4,6 +4,3 @@
 [submodule "Code/lib/ioLibrary_Driver"]
 	path = Code/lib/ioLibrary_Driver
 	url = https://github.com/Wiznet/ioLibrary_Driver
-[submodule "Code/lib/pico-ssd1306"]
-	path = Code/lib/pico-ssd1306
-	url = https://github.com/github.com/Harbys/pico-ssd1306
