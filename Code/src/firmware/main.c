@@ -71,6 +71,12 @@ int main() {
     printf("ip: %d.%d.%d.%d\n", config.ip[0], config.ip[1],config.ip[2],config.ip[3]);
     stdio_flush();
 
+    gpio_init(PORT_A_DIR_PIN);
+    gpio_set_dir(PORT_A_DIR_PIN, GPIO_OUT);
+    gpio_put(PORT_A_DIR_PIN, 1);
+
+    dmx_init(PORT_A_TX_PIN, pio0, PORT_B_TX_PIN, pio0);
+
     sleep_ms(100);
 
     gpio_init(PORT_A_LED_PIN);

@@ -8,14 +8,15 @@
 
 #include "pico/stdlib.h"
 #include "hardware/pio.h"
+#include "dmx_out.pio.h"
 
 // general 
-void dmx_init();
+void dmx_init(uint16_t pin_A, PIO Pio_A, uint16_t pin_B, PIO Pio_B);
 
 void dmx_deinit();
 
 // dmx output
-void dmx_write();
+void dmx_write(uint8_t *data_a, uint16_t lenght_a); //, uint8_t *data_b, uint16_t lenght_b);
 
 bool dmx_busy();
 

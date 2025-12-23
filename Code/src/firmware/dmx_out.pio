@@ -1,0 +1,25 @@
+
+
+.program dmx_output
+.side_set 1 opt
+
+; DMX is 250,000 Baud.
+; Use SM clock of 1MHz
+; each dmx bit takes 4 SM cycles
+
+    set x, 21       side 0
+MAB_loop:
+    jmp x-- MAB_loop    [7]
+
+    nop             side 1 [7]
+
+.wrap_target
+    pull block      side 1 [7]
+    set x, 7        side 0 [3]
+
+bitloop:
+    out pins, 1
+    jmp x-- bitloop [2]
+
+    nop             side 1 [7]
+.wrap

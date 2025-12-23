@@ -1,5 +1,6 @@
 // artnet.c
 #include "W5500/w5500.h"
+#include "dmx.h"
 #include "main.h" // TODO: temp for led pin
 
 #include "artnet.h"
@@ -87,12 +88,12 @@ void process_artnet(config_t *config) {
                 tx_buf[23] = 0x20;
                 // tx_buf[23] = (0b11 << 6) | (0b01 << 4); // Status 1
                 //           Normal mode   front panel addr
-                tx_buf[24] = 0x00;  // ESTA code low
+                tx_buf[24] = 0x00;  // ESTA code low (empty for hobby device)
                 tx_buf[25] = 0x00;  // high
                 memcpy(tx_buf + 26, config->node_name, 18);
                 memcpy(tx_buf + 44, config->long_node_name, 64);
                 // memcpy(tx_buf + 108, nodereport); // node status engineering
-                //tx_buf[172] = 0x00; // numports high (unused)
+                tx_buf[172] = 0x00; // numports high (unused)
                 tx_buf[173] = 2;    // number of in or output ports.
                 memcpy(tx_buf + 174, (uint8_t[]) {0xf0, 0xf0, 0x00, 0x00}, 4);
                 // memcpy(tx_buf + 178, goodInput, 4); // good input
@@ -108,37 +109,43 @@ void process_artnet(config_t *config) {
                 tx_buf[200] = 0x00;     // Style (default artnet node)
                 memcpy(tx_buf + 201, mac_address, 6);  // node mac address 
 
+
+                sendto(0, tx_buf, sizeof(tx_buf), source_ip, source_port, 4);
+                //sendto_IO_6(0, tx_buf, sizeof(tx_buf), source_ip, source_port, 4);
+
+
                 // uint8_t sr = getSn_SR(0);
                 // printf("Socket SR: 0x%02x\n", sr); // should be SOCK_UDP = 0x22
 
 
 
-                setSn_DIPR(0, source_ip);
-                setSn_DPORT(0, source_port);
+                // setSn_DIPR(0, source_ip);
+                // setSn_DPORTR(0, source_port);
+// 
+                 // int32_t return_val = sendto(0, tx_buf, sizeof(tx_buf), source_ip, 6454);
 
-                // int32_t return_val = sendto(0, tx_buf, sizeof(tx_buf), source_ip, 6454);
 
-                wiz_send_data(0, tx_buf, sizeof(tx_buf));
+                // wiz_send_data(0, tx_buf, sizeof(tx_buf));
 
-                setSn_CR(0, Sn_CR_SEND);
-                uint32_t timeout_us = 10000; // 10ms timeout is usually sufficient
-                while (!(getSn_IR(0) & Sn_IR_SENDOK) && (timeout_us > 0)) {
-                    sleep_us(1); 
-                    timeout_us--;
-                }
+                // setSn_CR(0, Sn_CR_SEND);
+                // uint32_t timeout_us = 10000; // 10ms timeout is usually sufficient
+                // while (!(getSn_IR(0) & Sn_IR_SENDOK) && (timeout_us > 0)) {
+                    // sleep_us(1); 
+                    // timeout_us--;
+                // }
 
-                if (getSn_IR(0) & Sn_IR_SENDOK) {
-                    setSn_IR(0, Sn_IR_SENDOK); // Clear it
-                    printf("ArtPollReply sent via manual SEND.\n");
+                // if (getSn_IR(0) & Sn_IR_SENDOK) {
+                    // setSn_IR(0, Sn_IR_SENDOK); // Clear it
+                    // printf("ArtPollReply sent via manual SEND.\n");
                     // return_val = packet_len; // Indicate success
-                } else {
-                    printf("Manual SEND failed/timed out.\n");
+                // } else {
+                    // printf("Manual SEND failed/timed out.\n");
                     // return_val = -1; // Indicate failure
-                }
+                // }
 
-                uint8_t dipr[4] = {0, 0, 0, 0};
-                setSn_DIPR(0, dipr);
-                setSn_DPORT(0, 0);
+                // uint8_t dipr[4] = {0, 0, 0, 0};
+                // setSn_DIPR(0, dipr);
+                // setSn_DPORT(0, 0);
 
                 // uint8_t dest_ip_check[4] = {0};
                 // getSn_DIPR(0, dest_ip_check);
@@ -187,9 +194,6 @@ void process_artnet(config_t *config) {
                 printf("artdmx\n");
 
                 // TODO: temp packet indicator, remove!
-                gpio_put(PORT_A_LED_PIN, 0);
-                sleep_ms(10);
-                gpio_put(PORT_A_LED_PIN, 1);
 
 
                 uint8_t seq = eth_buf[12];
@@ -202,6 +206,18 @@ void process_artnet(config_t *config) {
                 printf("lenght: %d\n", length);
                 printf("seq: %d\n", seq);
                 printf("ch 1 value: %d\n", eth_buf[18]);
+
+                if(universe == config->port_A_universe) {
+                    gpio_put(PORT_A_LED_PIN, 0);
+                    sleep_ms(10);
+                    gpio_put(PORT_A_LED_PIN, 1);
+
+                    while (dmx_busy()); //printf("dmx busy\n");
+                    // temporarely set eth_buf[17] to the dmx start code.
+                    eth_buf[17] = 0x00;
+                    dmx_write(eth_buf + 17, length+1);
+                }
+
 
                 // TODO: put correct dmx data vars here and uncomment
                 //

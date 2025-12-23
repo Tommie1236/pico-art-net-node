@@ -11,6 +11,10 @@ add_executable(firmware
   dmx.c
 )
 
+pico_generate_pio_header(firmware
+    ${CMAKE_CURRENT_SOURCE_DIR}/dmx_out.pio
+)
+
 # include submodules
 
 
@@ -22,8 +26,10 @@ target_link_libraries(firmware PRIVATE
     hardware_gpio
     hardware_i2c
     hardware_spi
+    hardware_clocks
     hardware_irq
     hardware_pio
+    hardware_dma
     
 
     ioLibrary
