@@ -4,7 +4,7 @@ set -e    # Exit on error
 
 touch Code/src/firmware/main.c # touch file to always print linker memory usage
 
-git submodule update --remote --recursive
+git submodule update --init --remote --recursive
 cd Code/lib/pico-sdk/
 export PICO_SDK_PATH=$PWD
 cd ../..
