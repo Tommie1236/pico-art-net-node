@@ -2,7 +2,10 @@
 
 #include "config.h"
 
+#include "main.h" // default config settings
+
 #include <string.h>
+#include <stdio.h>
 
 #include "hardware/flash.h"
 #include "hardware/irq.h"
@@ -28,16 +31,20 @@ void config_save(config_t* config){
 
 
 
-void config_load(config_t* config){
+bool config_load(config_t* config){
 
     const uint32_t* flash_ptr = (const uint32_t*)(XIP_BASE + FLASH_TARGET_OFFSET);
     const config_t* flash_config_ptr = (const config_t*) flash_ptr;
 
     if (flash_config_ptr->magic_number == CONFIG_MAGIC) {
         memcpy(config, flash_config_ptr, sizeof(config_t));
+        return 1;
     } else {
         // Fallback if no valid config in flash.
+        // TODO: implement better logging
+        printf("No valid config in flash!!\nLoading default config.\n");
         config_reset(config);
+        return 0;
     };
 }
 
@@ -47,19 +54,19 @@ void config_reset(config_t* config){
 
     memset(config, 0, sizeof(config_t));
 
-    memcpy(config->ip, (uint8_t[]) {192, 168, 2, 230}, 4);
-    memcpy(config->subnet, (uint8_t[]) {255, 255, 255, 0}, 4);
-    // gateway isn't really used but is still reset.
-    memcpy(config->gateway, (uint8_t[]) {0, 0, 0, 0}, 4);
+    memcpy(config->ip, CONFIG_DEFAULT_IP, 4);
+    memcpy(config->subnet, CONFIG_DEFAULT_SUBNET, 4);
+    // NOTE: gateway isn't really used but is still reset.
+    memcpy(config->gateway, CONFIG_DEFAULT_GATEWAY, 4);
 
     // reset names to blank and copy in default name.
     memset(config->node_name, ' ', 18);
-    memcpy(config->node_name, "Pico Artnet Node", 16); 
+    memcpy(config->node_name, "Pico Artnet Node\0", 17); 
     memset(config->long_node_name, ' ', 64);
-    memcpy(config->long_node_name, "Pico Artnet Node", 16);
+    memcpy(config->long_node_name, "Pico Artnet Node\0", 17);
     
-    config->port_A_status = OUTPUT;
-    config->port_B_status = OUTPUT;
+    config->port_A_mode = OUTPUT;
+    config->port_B_mode = OUTPUT;
     config->port_A_universe = 0;
     config->port_B_universe = 1;
 

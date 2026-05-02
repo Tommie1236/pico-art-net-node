@@ -28,7 +28,11 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-// TODO: add default values for settings that can be changed from the menu
+// TODO: add default values for settings that can be changed from the menu like ip/sn
+
+#define CONFIG_DEFAULT_IP           (uint8_t[]) {192, 168, 2, 230}
+#define CONFIG_DEFAULT_SUBNET       (uint8_t[]) {255, 255, 255, 0}
+#define CONFIG_DEFAULT_GATEWAY      (uint8_t[]) {0, 0, 0, 0}
 
 // General
 #define UNIVERSE_LENGTH 512

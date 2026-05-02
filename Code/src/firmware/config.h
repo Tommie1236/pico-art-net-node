@@ -8,20 +8,20 @@
 #define CONFIG_MAGIC 0x434E4647 // 'CNFG'
 #define FLASH_TARGET_OFFSET (PICO_FLASH_SIZE_BYTES - 4096)
 
-#define config_set(_config_ptr, _member, _value)        \
-    do {                                                \
-        __typeof__((_config_ptr)->_member) __temp_value = (_value); \
-        if ((_config_ptr)->_member != __temp_value) {   \
-            (_config_ptr)->_member = __temp_value;      \
-            (_config_ptr)->updated = true;              \
-        }                                               \
+#define config_set(_config_ptr, _member, _value)                    \
+    do {                                                            \
+        __typeof__((_config_ptr)->_member) __new_value = (_value);  \
+        if ((_config_ptr)->_member != __new_value) {                \
+            (_config_ptr)->_member = __new_value;                   \
+            (_config_ptr)->updated = true;                          \
+        }                                                           \
     } while (0);
 
 typedef enum {
     INPUT,
     OUTPUT,
     DISABLED
-} port_status_t;
+} port_mode_t;
 
 
 typedef struct {
@@ -30,9 +30,9 @@ typedef struct {
     uint8_t gateway[4];
     char node_name[18];
     char long_node_name[64];
-    port_status_t port_A_status;
+    port_mode_t port_A_mode;
     uint16_t port_A_universe;
-    port_status_t port_B_status;
+    port_mode_t port_B_mode;
     uint16_t port_B_universe;
     uint32_t magic_number; // 0x434E4647 CNFG
     bool sync_mode;
@@ -47,12 +47,16 @@ void config_save(config_t* config);
  * - config (config_t)   
 */
 
-void config_load(config_t* config);
+bool config_load(config_t* config);
 /* Loads the given config with data from flash.
  * If corrupt or missing set to default.
  * 
  * Parameters:
  * - config (config_t)   
+ *
+ * Returns:
+ *   1 when loading from flash
+ *   0 when resetting config (no valid flash available)
 g*/
 
 void config_reset(config_t* config);

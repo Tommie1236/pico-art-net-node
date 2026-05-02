@@ -2,8 +2,6 @@
 #include "stdio.h"
 
 #include "pico/time.h"
-#include "pico/stdlib.h"
-#include "pico/unique_id.h"
 
 #include "main.h"
 
@@ -55,7 +53,8 @@ int main() {
 
     config_t config;
 
-    config_reset(&config);
+    // loads config from flash if available. othewise resets.
+    config_load(&config);
 
     //wiz_NetInfo *netinfo = setup_w5500(
     setup_w5500(

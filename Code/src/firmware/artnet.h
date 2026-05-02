@@ -5,7 +5,6 @@
 #ifndef ARTNET_H
 #define ARTNET_H
 
-#include "pico/stdlib.h"
 #include "hardware/spi.h"
 
 #include "config.h"
