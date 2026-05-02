@@ -3,7 +3,6 @@
 
 #include "dmx.h"
 #include "hardware/clocks.h"
-#include "hardware/irq.h"
 #include <hardware/pio.h>
 #include <hardware/dma.h>
 
@@ -59,11 +58,13 @@ void dmx_init(uint16_t pinA, PIO PioA, uint16_t pinB, PIO PioB) {
 }
 
 void dmx_deinit() {
+    // TODO: deint a sm/interface
 
 }
 
 // dmx output
 void dmx_write(uint8_t *data_a, uint16_t lenght_a) { //, uint8_t *data_b, uint16_t lenght_b) {
+    // TODO: support 2nd output port
 
     pio_sm_set_enabled(pio_A, sm_A, false);
 
@@ -85,8 +86,10 @@ bool dmx_busy() {
 }
 
 // dmx input
+// TODO: supoprt dmx input
 
 void dmx_read() {
+    // reads blocking until next packet arrives
 
 }
 
@@ -96,5 +99,4 @@ void dmx_read_async() {
 
 uint32_t dmx_time_since_last_frame() {
     return 0;
-
 }

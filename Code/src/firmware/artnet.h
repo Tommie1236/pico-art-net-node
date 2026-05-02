@@ -28,5 +28,6 @@ wiz_NetInfo* setup_w5500(config_t *config,
 
 void setup_network(config_t *config, wiz_NetInfo *net_info);
 
+void update_network(config_t *config, wiz_NetInfo *net_into);
 
 #endif // ARTNET_d

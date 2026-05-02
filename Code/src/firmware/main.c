@@ -57,7 +57,7 @@ int main() {
     config_load(&config);
 
     //wiz_NetInfo *netinfo = setup_w5500(
-    setup_w5500(
+    wiz_NetInfo *netinfo = setup_w5500(
         &config,
         ETH_SPI,
         ETH_SCK_PIN,
@@ -72,7 +72,10 @@ int main() {
 
     gpio_init(PORT_A_DIR_PIN);
     gpio_set_dir(PORT_A_DIR_PIN, GPIO_OUT);
+    gpio_init(PORT_B_DIR_PIN);
+    gpio_set_dir(PORT_B_DIR_PIN, GPIO_OUT);
     gpio_put(PORT_A_DIR_PIN, 1);
+    gpio_put(PORT_B_DIR_PIN, 1);
 
     dmx_init(PORT_A_TX_PIN, pio0, PORT_B_TX_PIN, pio0);
 
@@ -86,6 +89,8 @@ int main() {
     gpio_put(PORT_B_LED_PIN, 1);
     for (;;) {
         process_artnet(&config);
+        // TODO: optimize by not checking if network settings have changed every loop.
+        update_network(&config, netinfo);
         // gpio_put(PORT_A_LED_PIN, 1);
         // gpio_put(PORT_B_LED_PIN, 0);
         // sleep_ms(500);

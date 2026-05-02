@@ -6,7 +6,6 @@
 #ifndef DMX_OUT_H
 #define DMX_OUT_H
 
-#include "pico/stdlib.h"
 #include "hardware/pio.h"
 #include "dmx_out.pio.h"
 

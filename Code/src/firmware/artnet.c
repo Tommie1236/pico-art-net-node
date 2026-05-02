@@ -27,7 +27,11 @@ static uint8_t last_dmx_packet_ip[4] = {0};
 // 530 bytes, but adding a bit of extra buffer.
 static uint8_t eth_buf[550] = {0}; 
 
-
+static const uint8_t port_type_map[] = {
+    [INPUT]    = 0x40,
+    [OUTPUT]   = 0x80,
+    [DISABLED] = 0x00,
+};
 
 void process_artnet(config_t *config) {
 
@@ -64,37 +68,42 @@ void process_artnet(config_t *config) {
             case 0x20:  
                 {
                     printf("artpoll\n");
+
                     uint8_t tx_buf[207] = {0};
                     // uint8_t tx_buf[239] = {0}; // extended reply
                     
                     // artpoll reply message
                     memcpy(tx_buf, "Art-Net\0", 8);
-                    // tx_buf[8] = 0x00;   // OpCode low 0x2100
+                    tx_buf[8] = 0x00;   // OpCode low 0x2100
                     tx_buf[9] = 0x21;   // OpCode high
                     memcpy(tx_buf + 10, config->ip, 4);    // Node Ip
                     tx_buf[14] = 0x36;  // Port low 0x1936 (6454)
                     tx_buf[15] = 0x19;  // Port high 
                     tx_buf[16] = 0x01;  // firmware version high
-                    // tx_buf[17] = 0x00;  // firmware version low
-                    // tx_buf[18] = 0x00;  // Netswitch high
-                    // tx_buf[19] = 0x00;  // Netswitch high
-                    // tx_buf[20] = 0x00;  // oem code high
-                    // tx_buf[21] = 0x00;  // oem code low
-                    // tx_buf[22] = 0x00;  // ubea Version
-                    tx_buf[23] = 0x20;
-                    // tx_buf[23] = (0b11 << 6) | (0b01 << 4); // Status 1
-                    //           Normal mode   front panel addr
-                    // tx_buf[24] = 0x00;  // ESTA code low (empty for hobby device)
-                    // tx_buf[25] = 0x00;  // high
+                    tx_buf[17] = 0x00;  // firmware version low
+                    tx_buf[18] = 0x00;  // Netswitch high
+                    tx_buf[19] = 0x00;  // Netswitch high
+                    tx_buf[20] = 0x00;  // oem code high
+                    tx_buf[21] = 0x00;  // oem code low
+                    tx_buf[22] = 0x00;  // ubea Version
+                    // TODO: update with rdm status
+                    tx_buf[23] = (0b11 << 6) | (0b01 << 4); // | (0b1 << 1); // Status 1
+                    //           Normal mode   front panel addr  rdm capable
+                    tx_buf[24] = 0x00;  // ESTA code low (empty for hobby device)
+                    tx_buf[25] = 0x00;  // high
                     memcpy(tx_buf + 26, config->node_name, 18);
                     memcpy(tx_buf + 44, config->long_node_name, 64);
                     // memcpy(tx_buf + 108, nodereport); // node status engineering
                     // tx_buf[172] = 0x00; // numports high (unused)
                     tx_buf[173] = 2;    // number of in or output ports.
-                    // TODO: update with port status
-                    memcpy(tx_buf + 174, (uint8_t[]) {0xf0, 0xf0, 0x00, 0x00}, 4);
+                    tx_buf[174] = port_type_map[config->port_A_mode];
+                    tx_buf[175] = port_type_map[config->port_B_mode];
+                    // tx_buf[176] = 0x00; // there are no port 3/4 on the node
+                    // tx_buf[177] = 0x00; // ^
+                    // TODO: good in/output required merging and other status info
                     // memcpy(tx_buf + 178, goodInput, 4); // good input
                     // memcpy(tx_buf + 182, goodOutputA, 4); // good output A
+
                     // memcpy(tx_buf + 186, swin, 4); // Swin
                     // memcpy(tx_buf + 190, swout, 4); // SwOut
                     // tx_buf[194] = 0x00;     // sACN priority
@@ -103,7 +112,7 @@ void process_artnet(config_t *config) {
                     // tx_buf[197] = 0x00;     // Spare
                     // tx_buf[198] = 0x00;     // Spare
                     // tx_buf[199] = 0x00;     // Spare
-                    // tx_buf[200] = 0x00;     // Style (default artnet node)
+                    tx_buf[200] = 0x00;     // Style (default artnet node)
                     memcpy(tx_buf + 201, mac_address, 6);  // node mac address 
 
 
@@ -157,7 +166,7 @@ void process_artnet(config_t *config) {
             case 0x52:
                 
                 // return if artsync didn't come from same ip as last artdmx packet.
-                if (memcmp(source_ip, last_dmx_packet_ip, 4) == 0) return;
+                if (memcmp(source_ip, last_dmx_packet_ip, 4) != 0) return;
 
                 config_set(config, sync_mode, true);
 
@@ -193,6 +202,7 @@ void process_artnet(config_t *config) {
                             config->updated = true;
                         };
                         // if (cmd & 1 << 0U); // NOTE: port is hardcoded for now, skip.
+                        config_save(config);
                     }
 
                     uint8_t tx_buf[34] = {0};
@@ -304,5 +314,14 @@ void setup_network(config_t *config, wiz_NetInfo *net_info) {
     memcpy(net_info->mac, mac_address, 6);
 
     wizchip_setnetinfo(net_info);
+}
+
+void update_network(config_t *config, wiz_NetInfo *net_info) {
+    if (config->updated) {
+        memcpy(net_info->ip, config->ip, 4);
+        memcpy(net_info->sn, config->subnet, 4);
+        memcpy(net_info->gw, config->gateway, 4);
+        wizchip_setnetinfo(net_info);
+    }
 }
 
