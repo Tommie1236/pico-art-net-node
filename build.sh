@@ -4,7 +4,7 @@ set -e    # Exit on error
 
 touch Code/src/firmware/main.c # touch file to always print linker memory usage
 
-git submodule update --init --recursive
+#git submodule update --remote --recursive
 cd Code/lib/pico-sdk/
 export PICO_SDK_PATH=$PWD
 cd ../..
@@ -12,7 +12,7 @@ cd ../..
 mkdir -p build
 cp ./lib/pico-sdk/external/pico_sdk_import.cmake .
 cd build
-cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 .. -DPICO_BOARD=pico
+cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 .. -DPICO_BOARD=pico -DPICOTOOL_FORCE_FETCH_FROM_GIT=1
 make -j $(($(nproc) * 2))
 
 while getopts 'l' flag; do
