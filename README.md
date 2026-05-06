@@ -1,3 +1,5 @@
+# !! working on v2. the main branch is deprecated if you see this message. please go to [the V2 branch](https://github.com/Tommie1236/pico-art-net-node/tree/V2).
+
 [![Build firmware](https://github.com/Tommie1236/pico-art-net-node/actions/workflows/cmake-single-platform.yml/badge.svg)](https://github.com/Tommie1236/pico-art-net-node/actions/workflows/cmake-single-platform.yml)
 
 # pico-art-net-node
