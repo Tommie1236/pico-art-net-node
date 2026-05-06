@@ -23,11 +23,14 @@ wiz_NetInfo* setup_w5500(config_t *config,
                          uint8_t eth_mosi_pin,
                          uint8_t eth_miso_pin,
                          uint8_t eth_cs_pin,
-                         uint8_t eth_rst_pin
+                         uint8_t eth_rst_pin,
+                         uint8_t eth_irq_pin
                          );
 
 void setup_network(config_t *config, wiz_NetInfo *net_info);
 
 void update_network(config_t *config, wiz_NetInfo *net_into);
+
+void w5500_irq_handler(uint gpio, uint events);
 
 #endif // ARTNET_d

@@ -28,9 +28,9 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-// TODO: add default values for settings that can be changed from the menu like ip/sn
-
+// TODO: change back to official ip after development
 #define CONFIG_DEFAULT_IP           (uint8_t[]) {192, 168, 2, 230}
+// #define CONFIG_DEFAULT_IP           (uint8_t[]) {10, 0, 0, 1}
 #define CONFIG_DEFAULT_SUBNET       (uint8_t[]) {255, 255, 255, 0}
 #define CONFIG_DEFAULT_GATEWAY      (uint8_t[]) {0, 0, 0, 0}
 
@@ -66,16 +66,17 @@
 #define DOWN_BUTTON_PIN 12  // Down
 #define EXIT_BUTTON_PIN 13  // Exit/Back
 
-// Ethernet (enc28j60)
-
+// Ethernet (w5500)
 #define ETH_CS_PIN      29
 #define ETH_MOSI_PIN    28
 #define ETH_MISO_PIN    27
 #define ETH_SCK_PIN     26
-#define ETH_INT_PIN     15
+#define ETH_IRQ_PIN     15
 #define ETH_RST_PIN     14
 #define ETH_SPI         spi1
 
+// uncomment if you want debug output in the serial console, should be disabled if using usb dmx
+#define DEBUG_LOGGING
 
 
 #endif // MAIN_H

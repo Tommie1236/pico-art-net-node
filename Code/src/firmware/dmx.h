@@ -6,11 +6,13 @@
 #ifndef DMX_OUT_H
 #define DMX_OUT_H
 
+#include "config.h"
+
 #include "hardware/pio.h"
 #include "dmx_out.pio.h"
 
 // general 
-void dmx_init(uint16_t pin_A, PIO Pio_A, uint16_t pin_B, PIO Pio_B);
+void dmx_init(config_t *config, uint16_t pin_A, PIO Pio_A, uint16_t pin_B, PIO Pio_B);
 
 void dmx_deinit();
 

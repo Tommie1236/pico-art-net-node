@@ -27,6 +27,8 @@ void config_save(config_t* config){
     flash_range_program(FLASH_TARGET_OFFSET, (const uint8_t*)config, sizeof(config_t));
 
     restore_interrupts(interrupts);
+
+     config->updated = false;
 }
 
 

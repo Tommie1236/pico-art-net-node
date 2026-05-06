@@ -35,6 +35,7 @@ static const uint8_t port_type_map[] = {
 
 void process_artnet(config_t *config) {
 
+    // TODO: move out of method that is only called on every network irq.
     // disable synchronus output after 4 seconds of no artSync packet
     if (( time_us_64() - last_sync) > ( 4 * 1000 * 1000)) {
         config_set(config, sync_mode, false);
@@ -44,34 +45,46 @@ void process_artnet(config_t *config) {
 
     if (status == 0) return;
 
-    printf("----------\n");
-    printf("ip: %d.%d.%d.%d\n", config->ip[0], config->ip[1],config->ip[2],config->ip[3]);
-    printf("status %u\n", status);
 
     uint8_t source_ip[4] = {0};
     uint16_t source_port = 0;
     
-    int32_t plen = recvfrom(0, eth_buf, sizeof(eth_buf), source_ip, &source_port);
+    int32_t packet_len = recvfrom(0, eth_buf, sizeof(eth_buf), source_ip, &source_port);
     
+#ifdef DEBUG_LOGGING
+    printf("----------\n");
+    printf("ip: %d.%d.%d.%d\n", config->ip[0], config->ip[1],config->ip[2],config->ip[3]);
+    printf("status %u\n", status);
     printf("recieved packet from ip: %d.%d.%d.%d\n", source_ip[0], source_ip[1], source_ip[2], source_ip[3]);
+#endif
 
-    if ((plen > 550) || (plen < 12)) {
-        printf("packet too long or short\n");
+    if ((packet_len > 550) || (packet_len < 12)) {
+#ifdef DEBUG_LOGGING
+        printf("packet too long or short. SKIP.\n");
+#endif
+        return;
     };
-    
+
     // Artnet
     if (memcmp(eth_buf, "Art-Net\0", 8) == 0) {
+
+#ifdef DEBUG_LOGGING
         printf("recieved art-package. code: %x\n", eth_buf[9]);
+#endif
+
         switch (eth_buf[9]) {
 
             // artPoll
             case 0x20:  
                 {
+
+#ifdef DEBUG_LOGGING
                     printf("artpoll\n");
+#endif
 
                     uint8_t tx_buf[207] = {0};
                     // uint8_t tx_buf[239] = {0}; // extended reply
-                    
+
                     // artpoll reply message
                     memcpy(tx_buf, "Art-Net\0", 8);
                     tx_buf[8] = 0x00;   // OpCode low 0x2100
@@ -115,27 +128,25 @@ void process_artnet(config_t *config) {
                     tx_buf[200] = 0x00;     // Style (default artnet node)
                     memcpy(tx_buf + 201, mac_address, 6);  // node mac address 
 
-
                     sendto(0, tx_buf, sizeof(tx_buf), source_ip, source_port);
                     break;
                 }
 
             // artDMX
             case 0x50:
-                printf("artdmx\n");
-
-                // TODO: temp packet indicator, remove!
-
-                memcpy(last_dmx_packet_ip, source_ip, 4);
-
-                uint8_t seq = eth_buf[12];
+                if (config->sync_mode) memcpy(last_dmx_packet_ip, source_ip, 4);
 
                 uint16_t length = (eth_buf[16] << 8 | eth_buf[17]);
                 uint16_t universe = eth_buf[14] | (eth_buf[15] << 8);
 
+#ifdef DEBUG_LOGGING
+                uint8_t seq = eth_buf[12];
+
+                printf("artdmx\n");
                 printf("universe: %d\n", universe);
                 printf("lenght: %d\n", length);
                 printf("seq: %d\n", seq);
+#endif
 
                 if(universe == config->port_A_universe) {
                     gpio_put(PORT_A_LED_PIN, 0);
@@ -190,7 +201,8 @@ void process_artnet(config_t *config) {
                         if (cmd & 1 << 3U) { // set ip/sn/port to default
                             memcpy(config->ip, CONFIG_DEFAULT_IP, 4);
                             memcpy(config->subnet, CONFIG_DEFAULT_SUBNET, 4);
-                            // NOTE: skip port for now
+                            // NOTE: using a port other than 6454 isn't supported right now.
+                            // could be added pretty simply but has no usecase in normal systems. Won't add.
                             config->updated = true;
                         }
                         if (cmd & 1 << 2U) {
@@ -210,7 +222,7 @@ void process_artnet(config_t *config) {
                     memcpy(tx_buf, "Art-Net\0", 8);
                     // tx_buf[8] = 0x00;   // opcode high
                     tx_buf[9] = 0xf9;
-                    // tx_buf[10] = 0x00; // prot high
+                    tx_buf[10] = 0x00; // prot high
                     tx_buf[11] = 0x0E;  // prot low
                     // tx_buf[12] = 0x00; // Spare
                     // tx_buf[13] = 0x00; // Spare
@@ -219,7 +231,7 @@ void process_artnet(config_t *config) {
                     memcpy(tx_buf + 20, config->subnet, 4);
                     tx_buf[24] = 0x19; // portHi (deprecated).
                     tx_buf[25] = 0x36; // portLow
-                    // tx_buf[26] = 0x00;  // status (dhcp not supported so 0)
+                    tx_buf[26] = 0x00;  // status (dhcp not supported so 0)
                     // tx_buf[27] = 0x00; // Spare
                     memcpy(tx_buf + 28, config->gateway, 4);
                     // tx_buf[32] = 0x00; // Spare
@@ -260,7 +272,8 @@ wiz_NetInfo* setup_w5500(config_t *config,
                          uint8_t mosi_pin,
                          uint8_t miso_pin,
                          uint8_t cs_pin,
-                         uint8_t rst_pin) {
+                         uint8_t rst_pin,
+                         uint8_t irq_pin) {
 
     eth_spi_inst = spi_inst;
     eth_cs_pin = cs_pin;
@@ -285,6 +298,8 @@ wiz_NetInfo* setup_w5500(config_t *config,
     reg_wizchip_spi_cbfunc(wizchip_spi_read, wizchip_spi_write);
     reg_wizchip_cs_cbfunc(wizchip_cs_select, wizchip_cs_deselect);
 
+    // w5500 has 32kb memory for sockets. specify how to split.
+    // for now, the normal split of 2kb per socket is more than enough
     uint8_t tx_rx_mem[2][8] = { {2,2,2,2,2,2,2,2}, {2,2,2,2,2,2,2,2}};
 
     wizchip_init(tx_rx_mem[0], tx_rx_mem[1]);
@@ -294,17 +309,23 @@ wiz_NetInfo* setup_w5500(config_t *config,
     setup_network(config, &netinfo);
     socket(0, Sn_MR_UDP , 6454, 0);
 
+    // init irq for socket 0 rx
+    setSIMR(0x01);
+    setSn_IMR(0, Sn_IR_RECV);
+
+    gpio_set_irq_enabled_with_callback(irq_pin, GPIO_IRQ_EDGE_FALL, true, &w5500_irq_handler);
+
     return &netinfo;
 }
 
 void setup_network(config_t *config, wiz_NetInfo *net_info) {
-    net_info->dhcp = NETINFO_STATIC;
+    net_info->dhcp = NETINFO_STATIC; // NOTE: DHCP not supported.
 
     memcpy(net_info->ip, config->ip, 4);
     memcpy(net_info->sn, config->subnet, 4);
     memcpy(net_info->gw, config->gateway, 4);
     
-    
+    // generate mac addr from default base and serial number.
     pico_unique_board_id_t id;
     pico_get_unique_board_id(&id);
 
@@ -317,11 +338,21 @@ void setup_network(config_t *config, wiz_NetInfo *net_info) {
 }
 
 void update_network(config_t *config, wiz_NetInfo *net_info) {
+    // update the netInfo settings from the current internal config.
     if (config->updated) {
         memcpy(net_info->ip, config->ip, 4);
         memcpy(net_info->sn, config->subnet, 4);
         memcpy(net_info->gw, config->gateway, 4);
         wizchip_setnetinfo(net_info);
     }
+}
+
+void w5500_irq_handler(uint gpio, uint events) {
+    uint8_t irq = getSn_IR(0);
+
+    if (irq & Sn_IR_RECV) {
+        setSn_IR(0, Sn_IR_RECV); 
+        // TODO: set data rx flag
+    } // else? what about different irq?
 }
 

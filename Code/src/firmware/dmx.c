@@ -2,6 +2,8 @@
 
 
 #include "dmx.h"
+#include "main.h"
+
 #include "hardware/clocks.h"
 #include <hardware/pio.h>
 #include <hardware/dma.h>
@@ -19,11 +21,26 @@ static uint prog_offset;
 
 
 
-void dmx_init(uint16_t pinA, PIO PioA, uint16_t pinB, PIO PioB) {
+void dmx_init(config_t *config, uint16_t pinA, PIO PioA, uint16_t pinB, PIO PioB) {
     pin_A = pinA;
     pin_B = pinB;
     pio_A = PioA;
     pio_B = PioB;
+
+    gpio_init(PORT_A_LED_PIN);
+    gpio_init(PORT_A_DIR_PIN);
+    gpio_init(PORT_B_LED_PIN);
+    gpio_init(PORT_B_DIR_PIN);
+
+    gpio_set_dir(PORT_A_LED_PIN, GPIO_OUT);
+    gpio_set_dir(PORT_A_DIR_PIN, GPIO_OUT);
+    gpio_set_dir(PORT_B_LED_PIN, GPIO_OUT);
+    gpio_set_dir(PORT_B_DIR_PIN, GPIO_OUT);
+
+    gpio_put(PORT_A_DIR_PIN, config->port_A_mode == DISABLED ? 0 : config->port_A_mode);
+    gpio_put(PORT_A_LED_PIN, 1);
+    gpio_put(PORT_B_DIR_PIN, config->port_B_mode == DISABLED ? 0 : config->port_B_mode);
+    gpio_put(PORT_B_LED_PIN, 1);
 
     // PIO
     prog_offset = pio_add_program(pio_A, &dmx_output_program);
