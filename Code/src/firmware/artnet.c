@@ -347,7 +347,7 @@ void update_network(config_t *config, wiz_NetInfo *net_info) {
     }
 }
 
-void w5500_irq_handler(uint gpio, uint events) {
+void w5500_irq_handler(uint gpio, uint32_t events) {
     uint8_t irq = getSn_IR(0);
 
     if (irq & Sn_IR_RECV) {

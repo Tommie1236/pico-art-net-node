@@ -5,7 +5,7 @@
 
 ; DMX is 250,000 Baud.
 ; Use SM clock of 1MHz
-; each dmx bit takes 4 SM cycles
+; Each dmx bit takes 4 SM cycles
 
     set x, 21       side 0
 MAB_loop:

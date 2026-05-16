@@ -31,6 +31,6 @@ void setup_network(config_t *config, wiz_NetInfo *net_info);
 
 void update_network(config_t *config, wiz_NetInfo *net_into);
 
-void w5500_irq_handler(uint gpio, uint events);
+void w5500_irq_handler(uint gpio, uint32_t events);
 
 #endif // ARTNET_d

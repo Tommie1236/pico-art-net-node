@@ -28,6 +28,12 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+// uncomment if you want debug output via usb serial, its automaticly disabled when using usb dmx
+#define DEBUG_LOGGING
+
+// Uncomment to enable serial usb dmx. !!Disables debug logging
+// #define USB_SERIAL_DMX
+
 // TODO: change back to official ip after development
 #define CONFIG_DEFAULT_IP           (uint8_t[]) {192, 168, 2, 230}
 // #define CONFIG_DEFAULT_IP           (uint8_t[]) {10, 0, 0, 1}
@@ -36,9 +42,6 @@
 
 // General
 #define UNIVERSE_LENGTH 512
-
-#define PORT_A          0
-#define PORT_B          1
 
 // DMX Ports
 #define PORT_A_ENABLE   1
@@ -75,8 +78,9 @@
 #define ETH_RST_PIN     14
 #define ETH_SPI         spi1
 
-// uncomment if you want debug output in the serial console, should be disabled if using usb dmx
-#define DEBUG_LOGGING
 
+#ifdef USB_SERIAL_DMX
+    #undef DEBUG_LOGGING
+#endif // usb_serial_dmx
 
 #endif // MAIN_H

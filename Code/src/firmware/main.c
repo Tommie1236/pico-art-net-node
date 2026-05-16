@@ -40,7 +40,12 @@ int main() {
 #endif 
     stdio_flush();
 
-    dmx_init(&config, PORT_A_TX_PIN, pio0, PORT_B_TX_PIN, pio0);
+    {
+        port_config_t portA = {PORT_A_TX_PIN, PORT_A_RX_PIN, PORT_A_DIR_PIN, PORT_A_LED_PIN};
+        port_config_t portB = {PORT_B_TX_PIN, PORT_B_RX_PIN, PORT_B_DIR_PIN, PORT_B_LED_PIN};
+
+        dmx_init(&config, &portA, &portB, pio0);
+    }
 
     for (;;) {
         process_artnet(&config);

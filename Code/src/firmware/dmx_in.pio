@@ -1,0 +1,10 @@
+
+
+.program dmx_input
+.side_set 1 opt
+
+; DMX is 250,000 Baud
+; Use SM clock of 1MHz
+; Each dmx ibt takes 4 SM cycles
+
+

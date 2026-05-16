@@ -17,9 +17,10 @@
         }                                                           \
     } while (0);
 
+// Enum values map directly to dir pin output to max485
 typedef enum {
-    INPUT,
-    OUTPUT,
+    OUTPUT = 1,
+    INPUT = 0,
     DISABLED
 } port_mode_t;
 
