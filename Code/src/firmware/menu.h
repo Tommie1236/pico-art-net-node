@@ -10,12 +10,11 @@
 
 // Menu item types:
 typedef enum {
-    MENU_I_SUBMENU,     // goto submenu
-    MENU_I_TOGGLE,      // checkbox / toggle value
+    MENU_I_SUBMENU,     // open submenu
+    MENU_I_SELECT,      // inline option selection
     MENU_I_RADIO,       // item of multiple choice
-    MENU_I_INT,
-    MENU_I_MULTI_INT,
-    MENU_I_STRING,
+    MENU_I_MULTI_INT,   // ip's etc
+    MENU_I_STRING,      // text
 } menu_item_type_t;
 
 struct menu_t;
