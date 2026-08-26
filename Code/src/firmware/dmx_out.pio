@@ -14,7 +14,7 @@ MAB_loop:
     nop             side 1 [7]
 
 .wrap_target
-    pull block      side 1 [7]
+    pull block      side 1 [7]      ; stalls when fifo is empty / data is send
     set x, 7        side 0 [3]
 
 bitloop:

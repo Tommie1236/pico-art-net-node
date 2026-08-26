@@ -21,7 +21,7 @@
 typedef enum {
     OUTPUT = 1,
     INPUT = 0,
-    DISABLED
+    DISABLED = 2
 } port_mode_t;
 
 

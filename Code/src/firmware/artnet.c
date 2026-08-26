@@ -2,7 +2,7 @@
 #include "artnet.h"
 
 #include "dmx.h"
-#include "main.h" // TODO: temp for led pin
+#include "main.h" // TODO: temp for led pin / config defaults
 
 #include <stdio.h>
 
@@ -14,6 +14,9 @@
 
 #include <stdint.h>
 #include <string.h>
+
+
+// TODO: split ethernet and artnet processing for sACN support instead of sACN in this file.
 
 static spi_inst_t *eth_spi_inst;
 static uint8_t eth_cs_pin;
@@ -47,7 +50,7 @@ void process_artnet(config_t *config) {
 
 
     uint8_t source_ip[4] = {0};
-    uint16_t source_port = 0;
+    uint16_t source_port = 0;   // TODO: maybe check port for 6454 (Art-Net) / 5568 (sACN)
     
     int32_t packet_len = recvfrom(0, eth_buf, sizeof(eth_buf), source_ip, &source_port);
     
@@ -60,7 +63,7 @@ void process_artnet(config_t *config) {
 
     if ((packet_len > 550) || (packet_len < 12)) {
 #ifdef DEBUG_LOGGING
-        printf("packet too long or short. SKIP.\n");
+        printf("packet too short or long. SKIPPING.\n");
 #endif
         return;
     };
@@ -75,65 +78,65 @@ void process_artnet(config_t *config) {
         switch (eth_buf[9]) {
 
             // artPoll
-            case 0x20:  
-                {
+            case 0x20:  {
 
 #ifdef DEBUG_LOGGING
-                    printf("artpoll\n");
+                printf("artpoll\n");
 #endif
 
-                    uint8_t tx_buf[207] = {0};
-                    // uint8_t tx_buf[239] = {0}; // extended reply
+                uint8_t tx_buf[207] = {0};
+                // uint8_t tx_buf[239] = {0}; // extended reply
 
-                    // artpoll reply message
-                    memcpy(tx_buf, "Art-Net\0", 8);
-                    tx_buf[8] = 0x00;   // OpCode low 0x2100
-                    tx_buf[9] = 0x21;   // OpCode high
-                    memcpy(tx_buf + 10, config->ip, 4);    // Node Ip
-                    tx_buf[14] = 0x36;  // Port low 0x1936 (6454)
-                    tx_buf[15] = 0x19;  // Port high 
-                    tx_buf[16] = 0x01;  // firmware version high
-                    tx_buf[17] = 0x00;  // firmware version low
-                    tx_buf[18] = 0x00;  // Netswitch high
-                    tx_buf[19] = 0x00;  // Netswitch high
-                    tx_buf[20] = 0x00;  // oem code high
-                    tx_buf[21] = 0x00;  // oem code low
-                    tx_buf[22] = 0x00;  // ubea Version
-                    // TODO: update with rdm status
-                    tx_buf[23] = (0b11 << 6) | (0b01 << 4); // | (0b1 << 1); // Status 1
-                    //           Normal mode   front panel addr  rdm capable
-                    tx_buf[24] = 0x00;  // ESTA code low (empty for hobby device)
-                    tx_buf[25] = 0x00;  // high
-                    memcpy(tx_buf + 26, config->node_name, 18);
-                    memcpy(tx_buf + 44, config->long_node_name, 64);
-                    // memcpy(tx_buf + 108, nodereport); // node status engineering
-                    // tx_buf[172] = 0x00; // numports high (unused)
-                    tx_buf[173] = 2;    // number of in or output ports.
-                    tx_buf[174] = port_type_map[config->port_A_mode];
-                    tx_buf[175] = port_type_map[config->port_B_mode];
-                    // tx_buf[176] = 0x00; // there are no port 3/4 on the node
-                    // tx_buf[177] = 0x00; // ^
-                    // TODO: good in/output required merging and other status info
-                    // memcpy(tx_buf + 178, goodInput, 4); // good input
-                    // memcpy(tx_buf + 182, goodOutputA, 4); // good output A
+                // artpoll reply message
+                memcpy(tx_buf, "Art-Net\0", 8);
+                tx_buf[8] = 0x00;   // OpCode low 0x2100
+                tx_buf[9] = 0x21;   // OpCode high
+                memcpy(tx_buf + 10, config->ip, 4);    // Node Ip
+                tx_buf[14] = 0x36;  // Port low 0x1936 (6454)
+                tx_buf[15] = 0x19;  // Port high 
+                tx_buf[16] = 0x01;  // firmware version high
+                // tx_buf[17] = 0x00;  // firmware version low
+                // tx_buf[18] = 0x00;  // Netswitch high
+                // tx_buf[19] = 0x00;  // Netswitch high
+                // tx_buf[20] = 0x00;  // oem code high
+                // tx_buf[21] = 0x00;  // oem code low
+                // tx_buf[22] = 0x00;  // ubea Version
+                // NOTE: update with rdm status
+                tx_buf[23] = (0b11 << 6) | (0b01 << 4); // | (0b1 << 1); // Status 1
+                //           Normal mode   front panel addr  rdm capable
+                // tx_buf[24] = 0x00;  // ESTA code low (empty for hobby device)
+                // tx_buf[25] = 0x00;  // high
+                memcpy(tx_buf + 26, config->node_name, 18);
+                memcpy(tx_buf + 44, config->long_node_name, 64);
+                // memcpy(tx_buf + 108, nodereport); // node status engineering
+                // tx_buf[172] = 0x00; // numports high (unused)
+                tx_buf[173] = 2;    // number of in or output ports.
+                tx_buf[174] = port_type_map[config->port_A_mode];
+                tx_buf[175] = port_type_map[config->port_B_mode];
+                // tx_buf[176] = 0x00; // there are no port 3/4 on the node
+                // tx_buf[177] = 0x00; // ^
+                // TODO: good in/output required merging and other status info
+                // memcpy(tx_buf + 178, goodInput, 4); // good input
+                // memcpy(tx_buf + 182, goodOutputA, 4); // good output A
 
-                    // memcpy(tx_buf + 186, swin, 4); // Swin
-                    // memcpy(tx_buf + 190, swout, 4); // SwOut
-                    // tx_buf[194] = 0x00;     // sACN priority
-                    // tx_buf[195] = 0x00;     // SwMacro
-                    // tx_buf[196] = 0x00;     // SwRemote
-                    // tx_buf[197] = 0x00;     // Spare
-                    // tx_buf[198] = 0x00;     // Spare
-                    // tx_buf[199] = 0x00;     // Spare
-                    tx_buf[200] = 0x00;     // Style (default artnet node)
-                    memcpy(tx_buf + 201, mac_address, 6);  // node mac address 
+                // memcpy(tx_buf + 186, swin, 4); // Swin
+                // memcpy(tx_buf + 190, swout, 4); // SwOut
+                // tx_buf[194] = 0x00;     // sACN priority
+                // tx_buf[195] = 0x00;     // SwMacro
+                // tx_buf[196] = 0x00;     // SwRemote
+                // tx_buf[197] = 0x00;     // Spare
+                // tx_buf[198] = 0x00;     // Spare
+                // tx_buf[199] = 0x00;     // Spare
+                // tx_buf[200] = 0x00;     // Style (default artnet node)
+                memcpy(tx_buf + 201, mac_address, 6);  // node mac address 
 
-                    sendto(0, tx_buf, sizeof(tx_buf), source_ip, source_port);
-                    break;
-                }
+                sendto(0, tx_buf, sizeof(tx_buf), source_ip, source_port);
+                break;
+            }
 
             // artDMX
-            case 0x50:
+            case 0x50: {
+                // TODO: check if sequence is valid
                 if (config->sync_mode) memcpy(last_dmx_packet_ip, source_ip, 4);
 
                 uint16_t length = (eth_buf[16] << 8 | eth_buf[17]);
@@ -149,32 +152,40 @@ void process_artnet(config_t *config) {
 #endif
 
                 if(universe == config->port_A_universe) {
+
+                    // Wait until last frame is tranmitted.
+                    // if send correctly this should never happen.
+                    while (dmx_busy(PORT_A)); 
+
+                    // HACK: temporarely set eth_buf[17] to the dmx start code.
+                    // Don't hardcode this in the pio to later support alternate start codes.
+                    eth_buf[17] = 0x00;
+                    dmx_write(PORT_A, eth_buf + 17, length+1);
+
+                    // TODO: make led async of main code. 
                     gpio_put(PORT_A_LED_PIN, 0);
                     sleep_ms(10);
                     gpio_put(PORT_A_LED_PIN, 1);
+                } else if (universe == config->port_B_universe) {
 
-                    while (dmx_busy()); 
+                    while (dmx_busy(PORT_B));
 
-                    // temporarely set eth_buf[17] to the dmx start code.
+                    // HACK: temporarely set eth_buf[17] to the dmx start code.
                     eth_buf[17] = 0x00;
-                    dmx_write(eth_buf + 17, length+1);
+                    dmx_write(PORT_B, eth_buf + 17, length+1);
+
+                    // TODO: make led async of main code. 
+                    gpio_put(PORT_B_LED_PIN, 0);
+                    sleep_ms(10);
+                    gpio_put(PORT_B_LED_PIN, 1);
+
                 }
 
-
-                // TODO: put correct dmx data vars here and uncomment
-                //
-                // if (config->port_A_universe == universe) {
-                //     memcpy(port_A_dmx_data, eth_buf + 18, lenght);
-                //     port_A_updated = true;
-                // }
-                // if (config->port_B_universe == universe) {
-                //     memcpy(port_B_dmx_data, eth_buf + 18, lenght);
-                //     port_B_updated = true;
-                // }
                 break;
+            }
 
             // artSync
-            case 0x52:
+            case 0x52: {
                 
                 // return if artsync didn't come from same ip as last artdmx packet.
                 if (memcmp(source_ip, last_dmx_packet_ip, 4) != 0) return;
@@ -186,64 +197,65 @@ void process_artnet(config_t *config) {
                 // synced output dmx callback
                 
                 break;
+            }
 
             // artIpProg
-            case 0xf8:
-                {
-                    uint8_t cmd = eth_buf[14];
+            case 0xf8: {
+                uint8_t cmd = eth_buf[14];
 
-                    if (cmd & 1 << 7U) {
-                        // if (cmd & 1 << 6U); // NOTE: dhcp is not supported for now.
-                        if (cmd & 1 << 4U) {
-                            memcpy(config->gateway, eth_buf + 26, 4);
-                            config->updated = true;
-                        };
-                        if (cmd & 1 << 3U) { // set ip/sn/port to default
-                            memcpy(config->ip, CONFIG_DEFAULT_IP, 4);
-                            memcpy(config->subnet, CONFIG_DEFAULT_SUBNET, 4);
-                            // NOTE: using a port other than 6454 isn't supported right now.
-                            // could be added pretty simply but has no usecase in normal systems. Won't add.
-                            config->updated = true;
-                        }
-                        if (cmd & 1 << 2U) {
-                            memcpy(config->ip, eth_buf + 16, 4);
-                            config->updated = true;
-                        };
-                        if (cmd & 1 << 1U) {
-                            memcpy(config->subnet, eth_buf + 20, 4);
-                            config->updated = true;
-                        };
-                        // if (cmd & 1 << 0U); // NOTE: port is hardcoded for now, skip.
-                        config_save(config);
+                if (cmd & 1 << 7U) {
+                    // if (cmd & 1 << 6U); // WARN: dhcp is not supported for now.
+                    if (cmd & 1 << 4U) {
+                        memcpy(config->gateway, eth_buf + 26, 4);
+                        config->updated = true;
+                    };
+                    if (cmd & 1 << 3U) { // set ip/sn/port to default
+                        memcpy(config->ip, CONFIG_DEFAULT_IP, 4);
+                        memcpy(config->subnet, CONFIG_DEFAULT_SUBNET, 4);
+                        // WARN: using a port other than 6454 isn't supported right now.
+                        // could be added pretty simply but has no usecase in normal systems. Won't add.
+                        config->updated = true;
                     }
-
-                    uint8_t tx_buf[34] = {0};
-
-                    memcpy(tx_buf, "Art-Net\0", 8);
-                    // tx_buf[8] = 0x00;   // opcode high
-                    tx_buf[9] = 0xf9;
-                    tx_buf[10] = 0x00; // prot high
-                    tx_buf[11] = 0x0E;  // prot low
-                    // tx_buf[12] = 0x00; // Spare
-                    // tx_buf[13] = 0x00; // Spare
-                    // tx_buf[14] = 0x00; // Spare
-                    memcpy(tx_buf + 16, config->ip, 4);
-                    memcpy(tx_buf + 20, config->subnet, 4);
-                    tx_buf[24] = 0x19; // portHi (deprecated).
-                    tx_buf[25] = 0x36; // portLow
-                    tx_buf[26] = 0x00;  // status (dhcp not supported so 0)
-                    // tx_buf[27] = 0x00; // Spare
-                    memcpy(tx_buf + 28, config->gateway, 4);
-                    // tx_buf[32] = 0x00; // Spare
-                    // tx_buf[33] = 0x00; // Spare
-                    
-                    sendto(0, tx_buf, sizeof(tx_buf), source_ip, source_port);
-
-                    break;
+                    if (cmd & 1 << 2U) {
+                        memcpy(config->ip, eth_buf + 16, 4);
+                        config->updated = true;
+                    };
+                    if (cmd & 1 << 1U) {
+                        memcpy(config->subnet, eth_buf + 20, 4);
+                        config->updated = true;
+                    };
+                    // if (cmd & 1 << 0U); // WARN: port is hardcoded for now, skip.
+                    config_save(config);
                 }
+
+                uint8_t tx_buf[34] = {0};
+
+                memcpy(tx_buf, "Art-Net\0", 8);
+                // tx_buf[8] = 0x00;   // opcode high
+                tx_buf[9] = 0xf9;
+                tx_buf[10] = 0x00; // prot high
+                tx_buf[11] = 0x0E;  // prot low
+                // tx_buf[12] = 0x00; // Spare
+                // tx_buf[13] = 0x00; // Spare
+                // tx_buf[14] = 0x00; // Spare
+                memcpy(tx_buf + 16, config->ip, 4);
+                memcpy(tx_buf + 20, config->subnet, 4);
+                tx_buf[24] = 0x19; // portHi (deprecated).
+                tx_buf[25] = 0x36; // portLow
+                // tx_buf[26] = 0x00;  // status (dhcp not supported so 0)
+                // tx_buf[27] = 0x00; // Spare
+                memcpy(tx_buf + 28, config->gateway, 4);
+                // tx_buf[32] = 0x00; // Spare
+                // tx_buf[33] = 0x00; // Spare
+
+                sendto(0, tx_buf, sizeof(tx_buf), source_ip, source_port);
+
+                break;
+            }
+
         } 
 
-    } // else // TODO: sACN ?
+    } // else if // TODO: sACN ?
 
 }
 

@@ -47,9 +47,9 @@ void dmx_deinit();
 void dmx_set_port_direction(dmx_port_t, port_mode_t);
 
 // dmx output
-void dmx_write(uint8_t *, uint16_t); //, uint8_t *data_b, uint16_t lenght_b);
+void dmx_write(dmx_port_t, uint8_t *, uint16_t); //, uint8_t *data_b, uint16_t lenght_b);
 
-bool dmx_busy();
+bool dmx_busy(dmx_port_t);
 
 // dmx input
 

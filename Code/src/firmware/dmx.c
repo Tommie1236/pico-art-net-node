@@ -12,6 +12,10 @@
 
 #include "string.h"
 
+// TODO: support automaticly resending at atleast 1Hz (but better 40~44Hz)
+// TODO: allow configurable timeout time and actions. (send zeros vs keep scene)
+// TODO: add better implementation of the status light. (currently in main.)
+
 static dmx_config_t dmx_config;
 
 void dmx_init(config_t *config,
@@ -133,26 +137,29 @@ void dmx_set_port_direction(dmx_port_t port, port_mode_t direction){
 
 
 // dmx output
-void dmx_write(uint8_t *data_a, uint16_t lenght_a) { //, uint8_t *data_b, uint16_t lenght_b) {
-    // TODO: support 2nd output port
+void dmx_write(dmx_port_t port, uint8_t *data_a, uint16_t lenght_a) { //, uint8_t *data_b, uint16_t lenght_b) {
 
-    pio_sm_set_enabled(dmx_config.pio, dmx_config.A.sm, false);
+    port_config_t *dmx_port= (port == PORT_A ? &dmx_config.A : &dmx_config.B);
 
-    pio_sm_restart(dmx_config.pio, dmx_config.A.sm);
+    pio_sm_set_enabled(dmx_config.pio, dmx_port->sm, false);
 
-    pio_sm_exec(dmx_config.pio, dmx_config.A.sm, pio_encode_jmp(dmx_config.prog_tx_offset));
+    pio_sm_restart(dmx_config.pio, dmx_port->sm);
 
-    pio_sm_set_enabled(dmx_config.pio, dmx_config.A.sm, true);
+    pio_sm_exec(dmx_config.pio, dmx_port->sm, pio_encode_jmp(dmx_config.prog_tx_offset));
 
-    dma_channel_transfer_from_buffer_now(dmx_config.A.dma_ch, data_a, lenght_a);
+    pio_sm_set_enabled(dmx_config.pio, dmx_port->sm, true);
+
+    dma_channel_transfer_from_buffer_now(dmx_port->dma_ch, data_a, lenght_a);
 }
 
-bool dmx_busy() {
+bool dmx_busy(dmx_port_t port) {
 
-    if(dma_channel_is_busy(dmx_config.A.dma_ch)) {
+    port_config_t *dmx_port= (port == PORT_A ? &dmx_config.A : &dmx_config.B);
+
+    if(dma_channel_is_busy(dmx_port->dma_ch)) {
         return true;
     } 
-    return !pio_sm_is_tx_fifo_empty(dmx_config.pio, dmx_config.A.sm);
+    return !pio_sm_is_tx_fifo_empty(dmx_config.pio, dmx_port->sm);
 }
 
 // dmx input
